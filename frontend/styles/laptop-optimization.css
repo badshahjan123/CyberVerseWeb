@@ -1,0 +1,52 @@
+/* Laptop-specific performance optimizations */
+
+/* Force hardware acceleration on laptops */
+@media (min-width: 768px) {
+  * {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  /* Optimize scrolling for laptops */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
+  }
+
+  /* Reduce blur effects on laptops */
+  .backdrop-blur-md {
+    backdrop-filter: blur(8px);
+  }
+
+  .backdrop-blur-lg {
+    backdrop-filter: blur(12px);
+  }
+
+  /* Optimize hover effects for laptops */
+  .hover\:scale-\[1\.02\]:hover {
+    transform: scale(1.01) translate3d(0, 0, 0);
+  }
+
+  /* Disable expensive effects on lower-end laptops */
+  @media (max-resolution: 150dpi) {
+    .shadow-glow,
+    .shadow-coral-glow,
+    .shadow-teal-glow {
+      box-shadow: none;
+    }
+    
+    .backdrop-blur-md,
+    .backdrop-blur-lg {
+      backdrop-filter: none;
+      background-color: rgba(30, 41, 59, 0.8);
+    }
+  }
+}

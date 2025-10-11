@@ -4,9 +4,12 @@ import { Suspense } from 'react'
 import { AppProvider } from '@/contexts/app-context'
 import { PerformanceMonitor } from '@/components/performance-monitor'
 import { PrefetchOptimizer } from '@/components/prefetch-optimizer'
+import { LaptopPerformance } from '@/components/laptop-performance'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import './globals.css'
+import '../styles/laptop-optimization.css'
+import '../styles/production-optimization.css'
 
 export const metadata = {
   title: 'CYBERVERSE',
@@ -21,12 +24,8 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        {process.env.NODE_ENV === 'development' && (
-          <script src="/performance-test.js" defer />
-        )}
-      </head>
+    <html lang="en" className="dark" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head />
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={<div className="min-h-screen bg-background" />}>
           <AppProvider>
@@ -35,8 +34,9 @@ export default function RootLayout({ children }) {
               {children}
             </main>
             <Footer />
-            <PerformanceMonitor />
+            {process.env.NODE_ENV === 'development' && <PerformanceMonitor />}
             <PrefetchOptimizer />
+            <LaptopPerformance />
           </AppProvider>
         </Suspense>
       </body>

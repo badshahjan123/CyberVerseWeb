@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Search, Filter, Grid, List } from "lucide-react"
 import { LabCard } from "@/components/ui/lab-card"
 import { ModernButton } from "@/components/ui/modern-button"
@@ -28,12 +28,14 @@ export default function LabsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedDifficulty, setSelectedDifficulty] = useState("all")
 
-  const filteredLabs = mockLabs.filter(lab => {
-    const matchesSearch = lab.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || lab.category === selectedCategory
-    const matchesDifficulty = selectedDifficulty === "all" || lab.difficulty === selectedDifficulty
-    return matchesSearch && matchesCategory && matchesDifficulty
-  })
+  const filteredLabs = useMemo(() => {
+    return mockLabs.filter(lab => {
+      const matchesSearch = lab.title.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === "all" || lab.category === selectedCategory
+      const matchesDifficulty = selectedDifficulty === "all" || lab.difficulty === selectedDifficulty
+      return matchesSearch && matchesCategory && matchesDifficulty
+    })
+  }, [searchTerm, selectedCategory, selectedDifficulty])
 
   return (
     <div className="bg-slate-950 py-8">
