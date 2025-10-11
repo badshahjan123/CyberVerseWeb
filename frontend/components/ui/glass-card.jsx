@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { forwardRef } from "react"
 import { cn } from "@/lib/utils"
 
@@ -20,7 +19,7 @@ const GlassCard = forwardRef(({
   ...props 
 }, ref) => {
   return (
-    <motion.div
+    <div
       ref={ref}
       className={cn(
         "rounded-2xl p-6 transition-all duration-300",
@@ -28,20 +27,10 @@ const GlassCard = forwardRef(({
         hover && "hover:shadow-lift hover:scale-[1.02]",
         className
       )}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        duration: 0.4,
-        ease: [0.22, 0.9, 0.36, 1]
-      }}
-      whileHover={hover ? {
-        y: -5,
-        transition: { duration: 0.2 }
-      } : {}}
       {...props}
     >
       {children}
-    </motion.div>
+    </div>
   )
 })
 

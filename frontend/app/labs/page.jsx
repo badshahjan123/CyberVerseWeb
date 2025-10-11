@@ -119,9 +119,9 @@ export default function LabsPage() {
             key={lab.id} 
             lab={lab} 
             isPremium={lab.isPremium}
-            userProgress={Math.floor(Math.random() * 100)}
-            isCompleted={Math.random() > 0.7}
-            isLocked={lab.isPremium && Math.random() > 0.5}
+            userProgress={37 + (lab.id * 7) % 63}
+            isCompleted={lab.id % 4 === 0}
+            isLocked={lab.isPremium && lab.id % 3 === 0}
           />
         ))}
       </div>

@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Clock, Users, Trophy, Lock, Play } from "lucide-react"
 import { GlassCard, GlassCardContent, GlassCardHeader } from "./glass-card"
@@ -13,6 +16,11 @@ export function LabCard({
   isCompleted = false,
   isLocked = false 
 }) {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   return (
     <GlassCard className="group hover:border-primary-400/50 transition-all duration-300 m-2">
       <GlassCardHeader className="relative p-4 pb-2">
@@ -68,7 +76,7 @@ export function LabCard({
           >
             <Link href={`/labs/${lab.id}`}>
               <Play className="w-4 h-4 mr-2" />
-              {isCompleted ? "Review" : "Start Lab"}
+              {mounted ? (isCompleted ? "Review" : "Start Lab") : "Start Lab"}
             </Link>
           </ModernButton>
         </div>
