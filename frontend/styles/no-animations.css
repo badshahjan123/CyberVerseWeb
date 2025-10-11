@@ -1,0 +1,65 @@
+/* Disable all animations globally */
+
+* {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Remove hover effects */
+*:hover {
+  transform: none !important;
+  scale: none !important;
+}
+
+/* Remove specific animation classes */
+.hover\:scale-\[1\.02\]:hover,
+.hover\:scale-105:hover,
+.hover\:scale-\[1\.005\]:hover,
+.hover\:-translate-y-2:hover,
+.hover\:-translate-y-1:hover {
+  transform: none !important;
+}
+
+/* Remove transition classes */
+.transition-all,
+.transition-colors,
+.transition-transform,
+.transition-opacity {
+  transition: none !important;
+}
+
+/* Remove animation classes */
+.animate-pulse,
+.animate-spin,
+.animate-bounce,
+.animate-glow-pulse {
+  animation: none !important;
+}
+
+/* Remove group hover effects */
+.group:hover .group-hover\:scale-110,
+.group:hover .group-hover\:scale-105,
+.group:hover .group-hover\:rotate-5,
+.group:hover .group-hover\:rotate-10,
+.group:hover .group-hover\:rotate-12,
+.group:hover .group-hover\:translate-x-1 {
+  transform: none !important;
+}
+
+/* Remove backdrop blur animations */
+.backdrop-blur-md,
+.backdrop-blur-lg {
+  backdrop-filter: none !important;
+  background-color: rgba(30, 41, 59, 0.8) !important;
+}
+
+/* Disable smooth scrolling */
+html {
+  scroll-behavior: auto !important;
+}
+
+/* Remove will-change properties */
+* {
+  will-change: auto !important;
+}

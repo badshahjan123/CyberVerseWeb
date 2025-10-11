@@ -22,9 +22,8 @@ const GlassCard = forwardRef(({
     <div
       ref={ref}
       className={cn(
-        "rounded-2xl p-6 transition-all duration-300",
+        "rounded-2xl p-6",
         cardVariants[variant],
-        hover && "hover:shadow-lift hover:scale-[1.02]",
         className
       )}
       {...props}

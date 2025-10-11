@@ -8,8 +8,7 @@ import { LaptopPerformance } from '@/components/laptop-performance'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import './globals.css'
-import '../styles/laptop-optimization.css'
-import '../styles/production-optimization.css'
+import '../styles/no-animations.css'
 
 export const metadata = {
   title: 'CYBERVERSE',

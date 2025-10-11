@@ -24,7 +24,7 @@ export function LabCard({
   }
 
   return (
-    <GlassCard className="group hover:border-primary-400/50 transition-colors duration-200">
+    <GlassCard className="group">
       <GlassCardHeader className="relative p-4 pb-2">
         {isPremium && (
           <Badge className="absolute top-2 right-2 bg-yellow-600 text-black border-0 text-xs">
@@ -39,7 +39,7 @@ export function LabCard({
         )}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-slate-100 mb-2 group-hover:text-primary-400 transition-colors">
+            <h3 className="text-base font-semibold text-slate-100 mb-2">
               {lab.title}
             </h3>
             <Badge className={`text-xs ${getDifficultyColor(lab.difficulty)}`}>
