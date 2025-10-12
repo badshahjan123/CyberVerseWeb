@@ -31,7 +31,8 @@ const RegisterPage = memo(() => {
     if (result.success) {
       setSuccess(true)
       setTimeout(() => {
-        navigate("/login")
+        // Redirect to email verification pending page
+        navigate("/email-verification-pending", { state: { email } })
       }, 1500)
     } else {
       setError(result.message || "Registration failed. Please try again.")
@@ -118,7 +119,7 @@ const RegisterPage = memo(() => {
             
             {success && (
               <p className="text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
-                Account created successfully! Redirecting to login...
+                Account created successfully! Please check your email to verify your account.
               </p>
             )}
             

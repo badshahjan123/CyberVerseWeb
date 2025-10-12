@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useApp } from "../contexts/app-context"
 import { ModernButton } from "./ui/modern-button"
 import { Badge } from "./ui/badge"
-import { Shield, LayoutDashboard, Users, Trophy, User, LogOut, Settings, Menu, X, Crown, BookOpen, Zap } from "lucide-react"
+import { Shield, LayoutDashboard, Users, Trophy, User, LogOut, Settings, Menu, X, Crown, BookOpen, Zap, Award } from "lucide-react"
 
 export default function Navbar() {
   const location = useLocation()
@@ -17,6 +17,7 @@ export default function Navbar() {
         { href: "/labs", label: "Labs", icon: BookOpen },
         { href: "/rooms", label: "Rooms", icon: Users },
         { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+        { href: "/certificates", label: "Certificates", icon: Award },
       ]
     : [
         { href: "/", label: "Home", icon: BookOpen },

@@ -83,6 +83,19 @@ export function AppProvider({ children }) {
         body: JSON.stringify({ email, password })
       })
       
+      // Check if OTP is required (new device detected)
+      if (response.requiresOTP) {
+        return { 
+          success: true, 
+          requiresOTP: true,
+          userId: response.userId,
+          deviceId: response.deviceId,
+          email: email,
+          message: response.message 
+        }
+      }
+      
+      // Normal login flow (trusted device)
       localStorage.setItem('token', response.token)
       updateLastActivity() // Set initial activity timestamp on login
       setUser(response.user)

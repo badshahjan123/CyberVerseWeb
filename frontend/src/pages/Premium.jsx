@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { ModernButton } from "../components/ui/modern-button"
 import { Badge } from "../components/ui/badge"
 import { Shield, Zap, Crown, Check, ArrowRight, Star } from "lucide-react"
 import { memo, useMemo } from "react"
 
 // Memoized plan card component
-const PlanCard = memo(({ plan, index }) => (
+const PlanCard = memo(({ plan, index, onGetStarted }) => (
   <div
     className={`relative p-8 rounded-xl border transition-all duration-300 ${
       plan.popular
@@ -46,6 +46,7 @@ const PlanCard = memo(({ plan, index }) => (
       size="lg"
       className="w-full"
       disabled={plan.current}
+      onClick={() => !plan.current && onGetStarted(plan)}
     >
       {plan.current ? (
         "Current Plan"
@@ -77,6 +78,8 @@ const FeatureCard = memo(({ feature, index }) => {
 })
 
 const PremiumPage = memo(() => {
+  const navigate = useNavigate()
+
   // Memoized plans data
   const plans = useMemo(() => [
     {
@@ -125,6 +128,10 @@ const PremiumPage = memo(() => {
     }
   ], [])
 
+  const handleGetStarted = (plan) => {
+    navigate('/checkout', { state: { plan } })
+  }
+
   // Memoized features data
   const features = useMemo(() => [
     {
@@ -162,7 +169,7 @@ const PremiumPage = memo(() => {
 
         <div className="grid gap-8 md:grid-cols-3 mb-12">
           {plans.map((plan, index) => (
-            <PlanCard key={index} plan={plan} index={index} />
+            <PlanCard key={index} plan={plan} index={index} onGetStarted={handleGetStarted} />
           ))}
         </div>
 
