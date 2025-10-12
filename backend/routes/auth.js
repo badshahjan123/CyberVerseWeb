@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
-const { sendVerificationEmail, sendWelcomeEmail } = require('../utils/emailService');
+
 
 const router = express.Router();
 
@@ -40,19 +40,18 @@ router.post('/register', [
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    // Create new user
-    const user = new User({ name, email, password });
+    // Create new user with verified email
+    const user = new User({ 
+      name, 
+      email, 
+      password,
+      isEmailVerified: true
+    });
     
-    // Generate email verification token
-    const verificationToken = user.generateEmailVerificationToken();
     await user.save();
 
-    // Send verification email
-    await sendVerificationEmail(email, name, verificationToken);
-
     res.status(201).json({
-      message: 'User registered successfully. Please check your email to verify your account.',
-      requiresVerification: true,
+      message: 'Account created successfully! Please login to continue.',
       user: {
         id: user._id,
         name: user.name,
