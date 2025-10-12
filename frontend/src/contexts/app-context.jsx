@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { apiCall } from "../config/api"
+import { apiCall, SESSION_TIMEOUT } from "../config/api"
 
 const AppContext = createContext(undefined)
 
@@ -11,17 +11,66 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     checkAuthStatus()
+    setupActivityTracking()
   }, [])
+
+  // Check if session has expired based on last activity
+  const isSessionExpired = () => {
+    const lastActivity = localStorage.getItem('lastActivity')
+    if (!lastActivity) return false
+    
+    const timeSinceLastActivity = Date.now() - parseInt(lastActivity)
+    return timeSinceLastActivity > SESSION_TIMEOUT
+  }
+
+  // Update last activity timestamp
+  const updateLastActivity = useCallback(() => {
+    localStorage.setItem('lastActivity', Date.now().toString())
+  }, [])
+
+  // Setup activity tracking listeners
+  const setupActivityTracking = () => {
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click']
+    
+    const handleActivity = () => {
+      if (localStorage.getItem('token')) {
+        updateLastActivity()
+      }
+    }
+
+    events.forEach(event => {
+      window.addEventListener(event, handleActivity, { passive: true })
+    })
+
+    // Cleanup function
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, handleActivity)
+      })
+    }
+  }
 
   const checkAuthStatus = async () => {
     const token = localStorage.getItem('token')
     if (token) {
+      // Check if session has expired
+      if (isSessionExpired()) {
+        console.log('Session expired due to inactivity')
+        localStorage.removeItem('token')
+        localStorage.removeItem('lastActivity')
+        setUser(null)
+        setLoading(false)
+        return
+      }
+
       try {
         const response = await apiCall('/auth/me')
         setUser(response.user)
+        updateLastActivity() // Update activity on successful auth check
       } catch (error) {
         console.error('Auth check failed:', error)
         localStorage.removeItem('token')
+        localStorage.removeItem('lastActivity')
       }
     }
     setLoading(false)
@@ -35,6 +84,7 @@ export function AppProvider({ children }) {
       })
       
       localStorage.setItem('token', response.token)
+      updateLastActivity() // Set initial activity timestamp on login
       setUser(response.user)
       
       // Note: Admins should use /admin-login for admin panel access
@@ -43,7 +93,7 @@ export function AppProvider({ children }) {
     } catch (error) {
       return { success: false, message: error.message }
     }
-  }, [])
+  }, [updateLastActivity])
 
   const register = useCallback(async (name, email, password) => {
     try {
@@ -64,6 +114,7 @@ export function AppProvider({ children }) {
   const logout = useCallback(() => {
     setUser(null)
     localStorage.removeItem('token')
+    localStorage.removeItem('lastActivity')
     navigate('/')
   }, [navigate])
 

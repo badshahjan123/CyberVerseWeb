@@ -1,6 +1,15 @@
 // Use environment variable for API URL, fallback to localhost for development
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Session timeout configuration (in milliseconds)
+// Default: 7 days of inactivity
+// You can change this to any duration you prefer:
+// - 1 hour: 60 * 60 * 1000
+// - 1 day: 24 * 60 * 60 * 1000
+// - 7 days: 7 * 24 * 60 * 60 * 1000
+// - 30 days: 30 * 24 * 60 * 60 * 1000
+export const SESSION_TIMEOUT = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 // API helper function
 export const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
