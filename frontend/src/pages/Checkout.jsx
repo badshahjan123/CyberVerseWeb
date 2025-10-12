@@ -2,6 +2,8 @@ import { useState, memo } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { ModernButton } from "../components/ui/modern-button"
 import { Badge } from "../components/ui/badge"
+import { useApp } from "../contexts/app-context"
+import api from "../config/api"
 import { 
   CreditCard, 
   Shield, 
@@ -51,6 +53,7 @@ PaymentMethodCard.displayName = 'PaymentMethodCard'
 const CheckoutPage = memo(() => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, setUser } = useApp()
   const selectedPlan = location.state?.plan || {
     name: "Pro",
     price: "$19",
@@ -59,6 +62,7 @@ const CheckoutPage = memo(() => {
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("card")
   const [processing, setProcessing] = useState(false)
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
     cardNumber: "",
     cardName: "",
@@ -139,19 +143,40 @@ const CheckoutPage = memo(() => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setProcessing(true)
+    setError("")
 
-    // Simulate payment processing
-    setTimeout(() => {
-      setProcessing(false)
+    try {
+      // Generate transaction ID
+      const transactionId = `TXN${Date.now()}`
+      const paymentMethodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.name
+
+      // Call backend API to upgrade user to premium
+      const response = await api.post('/payment/upgrade-to-premium', {
+        transactionId,
+        paymentMethod: paymentMethodName,
+        plan: selectedPlan.name,
+        amount: selectedPlan.price
+      })
+
+      // Update user context with premium status
+      if (response.data.user) {
+        setUser(response.data.user)
+      }
+
+      // Navigate to success page
       navigate('/payment-success', { 
         state: { 
           plan: selectedPlan,
           paymentMethod: paymentMethods.find(m => m.id === selectedPaymentMethod),
-          transactionId: `TXN${Date.now()}`,
+          transactionId,
           date: new Date().toLocaleDateString()
         } 
       })
-    }, 2000)
+    } catch (err) {
+      console.error('Payment error:', err)
+      setError(err.response?.data?.message || 'Payment failed. Please try again.')
+      setProcessing(false)
+    }
   }
 
   return (
@@ -193,6 +218,13 @@ const CheckoutPage = memo(() => {
               <h2 className="text-2xl font-bold text-slate-100 mb-6">Payment Details</h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Error Message Display */}
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-4">
+                    <p className="text-red-400 text-sm">{error}</p>
+                  </div>
+                )}
+
                 {selectedPaymentMethod === "card" && (
                   <>
                     <div>

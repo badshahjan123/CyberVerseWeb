@@ -25,6 +25,19 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  premiumSubscription: {
+    plan: String,
+    startDate: Date,
+    transactionId: String,
+    paymentMethod: String,
+    amount: String,
+    status: {
+      type: String,
+      enum: ['active', 'cancelled', 'expired'],
+      default: 'active'
+    },
+    cancelledAt: Date
+  },
   role: {
     type: String,
     enum: ['user', 'admin'],
