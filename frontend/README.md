@@ -1,16 +1,60 @@
-# React + Vite
+# CyberVerse - Interactive Learning Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, innovative education platform designed to enhance digital learning through interactive labs and practice environments built with React + Vite.
 
-Currently, two official plugins are available:
+## 🚀 Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+# Install dependencies
+npm install
 
-## React Compiler
+# Start development server
+npm run dev
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+# Build for production
+npm run build
+```
 
-## Expanding the ESLint configuration
+## 🎯 Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **12 Interactive Labs** across multiple learning domains
+- **7 Live Practice Rooms** with real-time collaboration
+- **Global Leaderboard** and achievement system
+- **Premium Features** with advanced learning content
+- **Ultra-smooth Performance** with optimized scrolling
+
+## 🛠️ Tech Stack
+
+- React 18 + Vite
+- Tailwind CSS
+- React Router DOM
+- Lucide React Icons
+- Context API for state management
+
+## 📁 Key Components
+
+- **Labs**: Interactive learning exercises with step-by-step guidance
+- **Rooms**: Live practice sessions with collaborative learning
+- **Dashboard**: Personal progress and learning analytics
+- **Leaderboard**: Global rankings and achievements
+
+## 🎨 Design
+
+- **Modern Theme**: Blue-cyan gradient color scheme
+- **Glassmorphism Effects**: Contemporary UI with backdrop blur
+- **Responsive Design**: Mobile-first approach
+- **Performance Optimized**: Lazy loading and virtual scrolling
+
+## 📖 Documentation
+
+For complete documentation, see [CYBERVERSE_DOCUMENTATION.md](./CYBERVERSE_DOCUMENTATION.md)
+
+## 🔧 Development
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+## 📄 License
+
+MIT License - see LICENSE file for details.
