@@ -10,13 +10,7 @@ export default defineConfig(({ command, mode }) => ({
   plugins: [
     react({
       // Optimize React refresh
-      fastRefresh: true,
-      babel: {
-        plugins: [
-          // Remove console.log in production
-          process.env.NODE_ENV === 'production' && ['transform-remove-console', { exclude: ['error', 'warn'] }]
-        ].filter(Boolean)
-      }
+      fastRefresh: true
     })
   ],
   resolve: {
