@@ -20,7 +20,7 @@ const app = express();
 app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://68ebc8f458a3243925592757--prismatic-kangaroo-95c131.netlify.app'] 
+    ? ['https://prismatic-kangaroo-95c131.netlify.app'] 
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
