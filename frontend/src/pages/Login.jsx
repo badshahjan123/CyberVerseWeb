@@ -31,24 +31,10 @@ const LoginPage = memo(() => {
     const result = await login(email, password)
     
     if (result.success) {
-      // Check if OTP verification is required
-      if (result.requiresOTP) {
-        // Redirect to OTP verification page
-        navigate('/verify-otp', { 
-          state: { 
-            userId: result.userId, 
-            deviceId: result.deviceId,
-            email: result.email,
-            redirectTo: redirectTo
-          } 
-        })
-      } else {
-        // Normal login - redirect to dashboard
-        setSuccess(true)
-        setTimeout(() => {
-          navigate(redirectTo)
-        }, 1500)
-      }
+      setSuccess(true)
+      setTimeout(() => {
+        navigate(redirectTo)
+      }, 500)
     } else {
       setError(result.message || "Invalid credentials. Please try again.")
     }

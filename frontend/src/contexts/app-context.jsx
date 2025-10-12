@@ -53,24 +53,15 @@ export function AppProvider({ children }) {
   const checkAuthStatus = async () => {
     const token = localStorage.getItem('token')
     if (token) {
-      // Check if session has expired
-      if (isSessionExpired()) {
-        console.log('Session expired due to inactivity')
-        localStorage.removeItem('token')
-        localStorage.removeItem('lastActivity')
-        setUser(null)
-        setLoading(false)
-        return
-      }
-
       try {
         const response = await apiCall('/auth/me')
         setUser(response.user)
-        updateLastActivity() // Update activity on successful auth check
+        updateLastActivity()
       } catch (error) {
-        console.error('Auth check failed:', error)
+        // Clear invalid token silently
         localStorage.removeItem('token')
         localStorage.removeItem('lastActivity')
+        setUser(null)
       }
     }
     setLoading(false)
@@ -83,24 +74,9 @@ export function AppProvider({ children }) {
         body: JSON.stringify({ email, password })
       })
       
-      // Check if OTP is required (new device detected)
-      if (response.requiresOTP) {
-        return { 
-          success: true, 
-          requiresOTP: true,
-          userId: response.userId,
-          deviceId: response.deviceId,
-          email: email,
-          message: response.message 
-        }
-      }
-      
-      // Normal login flow (trusted device)
       localStorage.setItem('token', response.token)
-      updateLastActivity() // Set initial activity timestamp on login
+      updateLastActivity()
       setUser(response.user)
-      
-      // Note: Admins should use /admin-login for admin panel access
       
       return { success: true, message: response.message }
     } catch (error) {
@@ -115,9 +91,6 @@ export function AppProvider({ children }) {
         body: JSON.stringify({ name, email, password })
       })
       
-      // Don't auto-login after registration - user must login manually
-      // localStorage.setItem('token', response.token)
-      // setUser(response.user)
       return { success: true, message: response.message }
     } catch (error) {
       return { success: false, message: error.message }

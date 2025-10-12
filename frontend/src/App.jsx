@@ -16,9 +16,7 @@ const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 const Certificates = lazy(() => import('./pages/Certificates'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
-const VerifyEmail = lazy(() => import('./pages/VerifyEmail'))
-const VerifyOTP = lazy(() => import('./pages/VerifyOTP'))
-const EmailVerificationPending = lazy(() => import('./pages/EmailVerificationPending'))
+
 const Rooms = lazy(() => import('./pages/Rooms'))
 const RoomDetail = lazy(() => import('./pages/RoomDetail'))
 const Leaderboard = lazy(() => import('./pages/Leaderboard'))
@@ -63,9 +61,7 @@ function App() {
                   <Route path="/certificates" element={<Certificates />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
-                  <Route path="/verify-email" element={<VerifyEmail />} />
-                  <Route path="/verify-otp" element={<VerifyOTP />} />
-                  <Route path="/email-verification-pending" element={<EmailVerificationPending />} />
+
                   <Route path="/rooms" element={<Rooms />} />
                   <Route path="/rooms/:id" element={<RoomDetail />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />

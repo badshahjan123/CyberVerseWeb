@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { ModernButton } from "../components/ui/modern-button"
 import { Badge } from "../components/ui/badge"
 import { useApp } from "../contexts/app-context"
-import api from "../config/api"
+import { apiCall } from "../config/api"
 import { 
   CreditCard, 
   Shield, 
@@ -151,16 +151,19 @@ const CheckoutPage = memo(() => {
       const paymentMethodName = paymentMethods.find(m => m.id === selectedPaymentMethod)?.name
 
       // Call backend API to upgrade user to premium
-      const response = await api.post('/payment/upgrade-to-premium', {
-        transactionId,
-        paymentMethod: paymentMethodName,
-        plan: selectedPlan.name,
-        amount: selectedPlan.price
+      const response = await apiCall('/payment/upgrade-to-premium', {
+        method: 'POST',
+        body: JSON.stringify({
+          transactionId,
+          paymentMethod: paymentMethodName,
+          plan: selectedPlan.name,
+          amount: selectedPlan.price
+        })
       })
 
       // Update user context with premium status
-      if (response.data.user) {
-        setUser(response.data.user)
+      if (response.user) {
+        setUser(response.user)
       }
 
       // Navigate to success page
@@ -174,7 +177,7 @@ const CheckoutPage = memo(() => {
       })
     } catch (err) {
       console.error('Payment error:', err)
-      setError(err.response?.data?.message || 'Payment failed. Please try again.')
+      setError(err.message || 'Payment failed. Please try again.')
       setProcessing(false)
     }
   }
