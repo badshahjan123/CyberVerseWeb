@@ -4,8 +4,7 @@ const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
-const { sendVerificationEmail, sendLoginOTP, sendWelcomeEmail } = require('../utils/emailService');
-const { getDeviceInfo } = require('../utils/deviceDetection');
+const { sendVerificationEmail, sendWelcomeEmail } = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -96,31 +95,6 @@ router.post('/login', [
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-
-    // Get device information
-    const deviceInfo = getDeviceInfo(req);
-    
-    // Check if device is trusted
-    const isTrusted = user.isTrustedDevice(deviceInfo.deviceId);
-    
-    if (!isTrusted) {
-      // New device detected - send OTP
-      const otp = user.generateLoginOTP();
-      await user.save();
-      
-      await sendLoginOTP(user.email, user.name, otp, deviceInfo);
-      
-      return res.status(200).json({
-        message: 'New device detected. OTP sent to your email.',
-        requiresOTP: true,
-        userId: user._id,
-        deviceId: deviceInfo.deviceId
-      });
-    }
-
-    // Trusted device - update last used
-    user.addTrustedDevice(deviceInfo);
-    await user.save();
 
     // Generate token
     const token = generateToken(user._id);
@@ -230,78 +204,7 @@ router.get('/verify-email/:token', async (req, res) => {
   }
 });
 
-// @route   POST /api/auth/verify-otp
-// @desc    Verify login OTP
-// @access  Public
-router.post('/verify-otp', [
-  body('userId').notEmpty().withMessage('User ID is required'),
-  body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits'),
-  body('deviceId').notEmpty().withMessage('Device ID is required')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        message: 'Validation failed', 
-        errors: errors.array() 
-      });
-    }
-    
-    const { userId, otp, deviceId } = req.body;
-    
-    // Find user with valid OTP
-    const user = await User.findById(userId).select('+loginOTP +loginOTPExpires');
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    // Check if OTP is expired
-    if (!user.loginOTP || !user.loginOTPExpires || user.loginOTPExpires < Date.now()) {
-      return res.status(400).json({ message: 'OTP has expired. Please login again.' });
-    }
-    
-    // Hash the provided OTP and compare
-    const hashedOTP = crypto
-      .createHash('sha256')
-      .update(otp)
-      .digest('hex');
-    
-    if (hashedOTP !== user.loginOTP) {
-      return res.status(401).json({ message: 'Invalid OTP' });
-    }
-    
-    // OTP is valid - clear it and add device to trusted list
-    user.loginOTP = undefined;
-    user.loginOTPExpires = undefined;
-    
-    // Get device info and add to trusted devices
-    const deviceInfo = getDeviceInfo(req);
-    user.addTrustedDevice(deviceInfo);
-    await user.save();
-    
-    // Generate token
-    const token = generateToken(user._id);
-    
-    res.json({
-      message: 'OTP verified successfully. Device added to trusted devices.',
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        isPremium: user.isPremium,
-        level: user.level,
-        points: user.points,
-        completedLabs: user.completedLabs,
-        isEmailVerified: user.isEmailVerified
-      }
-    });
-  } catch (error) {
-    console.error('OTP verification error:', error);
-    res.status(500).json({ message: 'Server error during OTP verification' });
-  }
-});
+
 
 // @route   POST /api/auth/resend-verification
 // @desc    Resend email verification
@@ -346,44 +249,6 @@ router.post('/resend-verification', [
   }
 });
 
-// @route   POST /api/auth/resend-otp
-// @desc    Resend login OTP
-// @access  Public
-router.post('/resend-otp', [
-  body('userId').notEmpty().withMessage('User ID is required')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        message: 'Validation failed', 
-        errors: errors.array() 
-      });
-    }
-    
-    const { userId } = req.body;
-    
-    const user = await User.findById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    // Generate new OTP
-    const deviceInfo = getDeviceInfo(req);
-    const otp = user.generateLoginOTP();
-    await user.save();
-    
-    // Send OTP email
-    await sendLoginOTP(user.email, user.name, otp, deviceInfo);
-    
-    res.json({
-      message: 'OTP sent successfully'
-    });
-  } catch (error) {
-    console.error('Resend OTP error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+
 
 module.exports = router;

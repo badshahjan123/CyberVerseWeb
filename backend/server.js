@@ -20,9 +20,7 @@ const app = express();
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://prismatic-kangaroo-95c131.netlify.app'] 
-    : ['http://localhost:5173', 'http://localhost:3000'],
+  origin: true,
   credentials: true
 }));
 
