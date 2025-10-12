@@ -31,7 +31,7 @@ const RegisterPage = memo(() => {
     if (result.success) {
       setSuccess(true)
       setTimeout(() => {
-        navigate("/dashboard")
+        navigate("/login")
       }, 1500)
     } else {
       setError(result.message || "Registration failed. Please try again.")
@@ -113,6 +113,12 @@ const RegisterPage = memo(() => {
             {error && (
               <p className="text-sm text-coral-400 bg-coral-500/10 border border-coral-500/20 rounded-lg p-3">
                 {error}
+              </p>
+            )}
+            
+            {success && (
+              <p className="text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+                Account created successfully! Redirecting to login...
               </p>
             )}
             

@@ -52,8 +52,9 @@ export function AppProvider({ children }) {
         body: JSON.stringify({ name, email, password })
       })
       
-      localStorage.setItem('token', response.token)
-      setUser(response.user)
+      // Don't auto-login after registration - user must login manually
+      // localStorage.setItem('token', response.token)
+      // setUser(response.user)
       return { success: true, message: response.message }
     } catch (error) {
       return { success: false, message: error.message }
