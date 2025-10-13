@@ -53,6 +53,11 @@ export function AppProvider({ children }) {
   const checkAuthStatus = async () => {
     const token = localStorage.getItem('token')
     if (token) {
+      // Check if session expired
+      if (isSessionExpired()) {
+        logout()
+        return
+      }
       try {
         const response = await apiCall('/auth/me')
         setUser(response.user)

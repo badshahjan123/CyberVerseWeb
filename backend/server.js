@@ -1,4 +1,3 @@
-app.use(express.json());
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -60,7 +59,8 @@ const createDefaultAdmin = async () => {
         email: 'badshahkha656@gmail.com',
         password: 'Badshah@123',
         role: 'admin',
-        isPremium: true
+        isPremium: true,
+        isEmailVerified: true
       });
       await admin.save();
       console.log('🔑 Default admin created: badshahkha656@gmail.com / Badshah@123');

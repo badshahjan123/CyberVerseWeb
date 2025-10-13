@@ -47,54 +47,7 @@ const RegisterPage = memo(() => {
     setLoading(false)
   }, [username, email, password, confirmPassword, register, navigate])
 
-  useEffect(() => {
-    let mounted = true
-    const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
-    const initGoogle = () => {
-      if (!mounted || !window.google || !CLIENT_ID) return
-
-      window.google.accounts.id.initialize({
-        client_id: CLIENT_ID,
-        callback: async (response) => {
-          try {
-            setLoading(true)
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken: response.credential })
-            })
-            const data = await res.json()
-            if (data.success) {
-              localStorage.setItem('token', data.token)
-              navigate('/dashboard')
-            } else {
-              setError(data.message || 'Google signup failed')
-            }
-          } catch (err) {
-            setError('Google signup error')
-          } finally {
-            setLoading(false)
-          }
-        }
-      })
-
-      const container = document.getElementById('googleSignIn')
-      if (container) {
-        window.google.accounts.id.renderButton(container, { 
-          theme: 'outline', 
-          size: 'large',
-          width: '100%'
-        })
-      }
-    }
-
-    if (window.google?.accounts) {
-      initGoogle()
-    }
-
-    return () => { mounted = false }
-  }, [navigate])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">

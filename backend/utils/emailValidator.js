@@ -11,35 +11,10 @@ class EmailValidator {
 
 
 
-  // Verify if Gmail account actually exists
+  // Simplified Gmail validation (no actual email sending)
   static async verifyGmailExists(email) {
-    try {
-      const transporter = nodemailer.createTransporter({
-        host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT),
-        secure: false,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD
-        }
-      });
-
-      // Test email delivery to check if account exists
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Email Verification Test',
-        text: 'Testing email delivery'
-      });
-      
-      return true;
-    } catch (error) {
-      // If email fails to send, account likely doesn't exist
-      if (error.code === 'EENVELOPE' || error.responseCode === 550) {
-        return false;
-      }
-      throw error;
-    }
+    // Just validate Gmail domain format - avoid spam issues
+    return this.isGoogleEmail(email);
   }
 
   // Send verification email
