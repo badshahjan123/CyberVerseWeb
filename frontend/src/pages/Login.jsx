@@ -60,6 +60,7 @@ const LoginPage = memo(() => {
               <Shield className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-xl font-bold text-white mb-1">Welcome Back</h1>
+            {/* Updated with admin routing fix */}
             <p className="text-gray-300 text-sm">Sign in to continue your journey</p>
           </div>
 
