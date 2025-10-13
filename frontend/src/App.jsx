@@ -1,9 +1,59 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AppProvider } from './contexts/app-context'
 import Navbar from './components/navbar'
 import Footer from './components/footer'
 import { Suspense, lazy } from 'react'
 import './App.css'
+
+/* Lightweight Futuristic UI - Performance Optimized */
+const futuristicStyles = `
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cyber-glow {
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+  border: 1px solid rgba(0, 255, 255, 0.5);
+}
+
+.cyber-glow:hover {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+.hover-lift {
+  transition: transform 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.neon-text {
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
+
+.futuristic-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  transition: border-color 0.2s ease;
+}
+
+.futuristic-card:hover {
+  border-color: rgba(0, 255, 255, 0.5);
+}
+`
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = futuristicStyles
+  document.head.appendChild(style)
+}
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'))
@@ -34,13 +84,12 @@ const PageLoader = () => (
   </div>
 )
 
-function App() {
-  const isAdminRoute = window.location.pathname.startsWith('/secure-admin')
+function AppContent() {
+  const location = useLocation()
+  const isAdminRoute = location.pathname.startsWith('/secure-admin')
   
   return (
-    <Router>
-      <AppProvider>
-        <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<PageLoader />}>
           {isAdminRoute ? (
             <Routes>
               <Route path="/secure-admin-login" element={<SecureAdminLogin />} />
@@ -49,7 +98,7 @@ function App() {
           ) : (
             <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col">
               <Navbar />
-              <main className="flex-1">
+              <main className="flex-1 glass">
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/labs" element={<Labs />} />
@@ -72,7 +121,15 @@ function App() {
               <Footer />
             </div>
           )}
-        </Suspense>
+    </Suspense>
+  )
+}
+
+function App() {
+  return (
+    <Router>
+      <AppProvider>
+        <AppContent />
       </AppProvider>
     </Router>
   )

@@ -81,37 +81,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
-  emailVerificationToken: {
-    type: String,
-    select: false
-  },
-  emailVerificationExpires: {
-    type: Date,
-    select: false
-  },
-  loginOTP: {
-    type: String,
-    select: false
-  },
-  loginOTPExpires: {
-    type: Date,
-    select: false
-  },
-  trustedDevices: [{
-    deviceId: String,
-    deviceName: String,
-    browser: String,
-    os: String,
-    lastUsed: Date,
-    addedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
+
   authProvider: {
     type: String,
     enum: ['local', 'google'],
@@ -142,56 +112,6 @@ userSchema.methods.calculateRank = async function() {
   return rank;
 };
 
-// Generate email verification token
-userSchema.methods.generateEmailVerificationToken = function() {
-  const crypto = require('crypto');
-  const token = crypto.randomBytes(32).toString('hex');
-  
-  this.emailVerificationToken = crypto
-    .createHash('sha256')
-    .update(token)
-    .digest('hex');
-  
-  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-  
-  return token;
-};
 
-// Generate login OTP
-userSchema.methods.generateLoginOTP = function() {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-  
-  const crypto = require('crypto');
-  this.loginOTP = crypto
-    .createHash('sha256')
-    .update(otp)
-    .digest('hex');
-  
-  this.loginOTPExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-  
-  return otp;
-};
-
-// Check if device is trusted
-userSchema.methods.isTrustedDevice = function(deviceId) {
-  return this.trustedDevices.some(device => device.deviceId === deviceId);
-};
-
-// Add trusted device
-userSchema.methods.addTrustedDevice = function(deviceInfo) {
-  // Check if device already exists
-  const existingDevice = this.trustedDevices.find(
-    device => device.deviceId === deviceInfo.deviceId
-  );
-  
-  if (existingDevice) {
-    existingDevice.lastUsed = Date.now();
-  } else {
-    this.trustedDevices.push({
-      ...deviceInfo,
-      lastUsed: Date.now()
-    });
-  }
-};
 
 module.exports = mongoose.model('User', userSchema);

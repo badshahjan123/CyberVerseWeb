@@ -54,13 +54,16 @@ const createDefaultAdmin = async () => {
   try {
     const adminExists = await User.findOne({ role: 'admin' });
     if (!adminExists) {
+      const bcrypt = require('bcryptjs');
+      const salt = await bcrypt.genSalt(12);
+      const hashedPassword = await bcrypt.hash(process.env.DEFAULT_ADMIN_PASSWORD || 'Badshah@123', salt);
+      
       const admin = new User({
         name: 'Badshah Khan',
-        email: 'badshahkha656@gmail.com',
-        password: 'Badshah@123',
+        email: process.env.DEFAULT_ADMIN_EMAIL || 'badshahkha656@gmail.com',
+        password: hashedPassword,
         role: 'admin',
-        isPremium: true,
-        isEmailVerified: true
+        isPremium: true
       });
       await admin.save();
       console.log('🔑 Default admin created: badshahkha656@gmail.com / Badshah@123');

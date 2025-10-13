@@ -9,7 +9,7 @@ const Profile = memo(() => {
   const navigate = useNavigate()
   const [isEditing, setIsEditing] = useState(false)
   const [editForm, setEditForm] = useState({ name: '', email: '' })
-  const [isPremium] = useState(false)
+  const isPremium = user?.isPremium || false
 
   const userStats = useMemo(() => ({
     rank: user?.rank || 999,

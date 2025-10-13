@@ -140,9 +140,11 @@ const Leaderboard = memo(() => {
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">CN</span>
                 </div>
-                <span className="absolute -top-2 -right-2 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs rounded">
-                  Pro
-                </span>
+                {user?.isPremium && (
+                  <span className="absolute -top-2 -right-2 px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-black text-xs rounded">
+                    Pro
+                  </span>
+                )}
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-100">{user?.name || 'User'}</h3>

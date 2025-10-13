@@ -38,7 +38,7 @@ const Dashboard = memo(() => {
       <div className="page-container bg-slate-950 py-8">
         <div className="container mx-auto px-4">
           <div className="mb-8">
-            <h1 className="mb-2 text-3xl font-bold text-white">Welcome back, {userData.name}!</h1>
+            <h1 className="mb-2 text-3xl font-bold neon-text">Welcome back, {userData.name}!</h1>
             <p className="text-slate-300">Continue your cybersecurity journey</p>
           </div>
 
@@ -46,7 +46,7 @@ const Dashboard = memo(() => {
             {stats.map((stat, index) => {
               const Icon = stat.icon
               return (
-                <div key={index} className="card p-6 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                <div key={index} className="futuristic-card hover-lift p-6 rounded-xl">
                   <div className="flex items-center gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-700/50">
                       <Icon className={`h-6 w-6 ${stat.color}`} />
@@ -77,7 +77,7 @@ const Dashboard = memo(() => {
                 </div>
                 <div className="p-6 space-y-4">
                   {recentLabs.map((lab) => (
-                    <div key={lab.id} className="list-item p-4 rounded-lg bg-slate-700/30 border border-slate-600/50">
+                    <div key={lab.id} className="futuristic-card hover-lift p-4 rounded-lg">
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h3 className="font-semibold text-white">{lab.title}</h3>
@@ -127,7 +127,7 @@ const Dashboard = memo(() => {
                   <p className="text-slate-400 mb-4">Live attack challenges</p>
                   <div className="space-y-3">
                     {upcomingRooms.map((room) => (
-                      <div key={room.id} className="list-item p-3 rounded-lg bg-slate-700/30">
+                      <div key={room.id} className="futuristic-card hover-lift p-3 rounded-lg">
                         <h4 className="font-semibold text-white text-sm mb-2">{room.title}</h4>
                         <div className="flex items-center justify-between text-xs text-slate-400">
                           <span>{room.participants} players</span>
