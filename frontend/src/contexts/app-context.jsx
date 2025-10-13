@@ -83,7 +83,7 @@ export function AppProvider({ children }) {
       updateLastActivity()
       setUser(response.user)
       
-      return { success: true, message: response.message }
+      return { success: true, message: response.message, user: response.user }
     } catch (error) {
       return { success: false, message: error.message }
     }

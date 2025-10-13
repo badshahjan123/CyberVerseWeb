@@ -7,7 +7,7 @@ import { Shield, Loader2, Check, ArrowRight } from "lucide-react"
 const LoginPage = memo(() => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { login, isAuthenticated } = useApp()
+  const { login, isAuthenticated, user } = useApp()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -17,10 +17,14 @@ const LoginPage = memo(() => {
   const redirectTo = searchParams.get('redirect') || '/dashboard'
   
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(redirectTo)
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/secure-admin-dashboard')
+      } else {
+        navigate(redirectTo)
+      }
     }
-  }, [isAuthenticated, navigate, redirectTo])
+  }, [isAuthenticated, user, navigate, redirectTo])
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
@@ -32,7 +36,12 @@ const LoginPage = memo(() => {
     if (result.success) {
       setSuccess(true)
       setTimeout(() => {
-        navigate(redirectTo)
+        // Check user role and redirect accordingly
+        if (result.user && result.user.role === 'admin') {
+          navigate('/secure-admin-dashboard')
+        } else {
+          navigate(redirectTo)
+        }
       }, 500)
     } else {
       setError(result.message || "Invalid credentials. Please try again.")
