@@ -15,12 +15,16 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'],
-    select: false
-  },
+ password: {
+  type: String,
+  required: [true, 'Password is required'],
+  minlength: [6, 'Password must be at least 6 characters'],
+  match: [
+    /^(?=.*[A-Z]).+$/,
+    'Password must contain at least one uppercase letter'
+  ],
+  select: false
+},
   isPremium: {
     type: Boolean,
     default: false
@@ -107,7 +111,12 @@ const userSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     }
-  }]
+  }],
+  authProvider: {
+    type: String,
+    enum: ['local', 'google'],
+    default: 'local'
+  }
 }, {
   timestamps: true
 });
