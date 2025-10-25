@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AppProvider } from './contexts/app-context'
+import { RealtimeProvider } from './contexts/realtime-context'
 import Navbar from './components/navbar'
 import Footer from './components/footer'
 import { Suspense, lazy } from 'react'
@@ -129,7 +130,9 @@ function App() {
   return (
     <Router>
       <AppProvider>
-        <AppContent />
+        <RealtimeProvider>
+          <AppContent />
+        </RealtimeProvider>
       </AppProvider>
     </Router>
   )

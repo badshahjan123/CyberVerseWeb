@@ -1,39 +1,30 @@
 import { useEffect, useState, memo, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
-import { getLeaderboard } from "../services/progress"
+import { useRealTimeLeaderboard } from "../hooks/useRealTimeLeaderboard"
+import { useRealtime } from "../contexts/realtime-context"
 import { Trophy, Medal, Award, TrendingUp, Crown, Star, Zap, Target } from "lucide-react"
 
 const Leaderboard = memo(() => {
   const { isAuthenticated, loading, user } = useApp()
+  const { lastUpdate } = useRealtime()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("global")
-  const [leaderboardData, setLeaderboardData] = useState([])
+  const { leaderboard, loading: leaderboardLoading, error: leaderboardError } = useRealTimeLeaderboard()
   const [userRank, setUserRank] = useState(null)
-
-  const fetchLeaderboard = useCallback(async () => {
-    try {
-      const data = await getLeaderboard(50)
-      const formattedData = data.map(player => ({
-        ...player,
-        username: player.name,
-        trend: 'up'
-      }))
-      setLeaderboardData(formattedData)
-      
-      if (user) {
-        const userPosition = formattedData.findIndex(player => player.name === user.name)
-        if (userPosition !== -1) {
-          setUserRank(userPosition + 1)
-        } else {
-          setUserRank(999)
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch leaderboard:', error)
-      setLeaderboardData([])
+  
+  const leaderboardData = leaderboard.map(player => ({
+    ...player,
+    username: player.name,
+    trend: 'up'
+  }))
+  
+  useEffect(() => {
+    if (user && leaderboardData.length > 0) {
+      const userPosition = leaderboardData.findIndex(player => player.name === user.name)
+      setUserRank(userPosition !== -1 ? userPosition + 1 : 999)
     }
-  }, [user])
+  }, [user, leaderboardData])
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -41,11 +32,7 @@ const Leaderboard = memo(() => {
     }
   }, [isAuthenticated, loading, navigate])
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchLeaderboard()
-    }
-  }, [isAuthenticated, fetchLeaderboard])
+
 
   const [globalLeaderboard, setGlobalLeaderboard] = useState([])
 
@@ -161,7 +148,16 @@ const Leaderboard = memo(() => {
           </div>
           <div className="p-6">
             <div className="space-y-3">
-              {leaderboardData.length > 0 ? leaderboardData.map((player) => (
+              {leaderboardLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                  <p className="text-slate-400">Loading real-time data...</p>
+                </div>
+              ) : leaderboardError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-400">{leaderboardError}</p>
+                </div>
+              ) : leaderboardData.length > 0 ? leaderboardData.map((player) => (
                 <div
                   key={player.rank}
                   className={`list-item flex items-center justify-between rounded-lg border p-4 transition-colors ${

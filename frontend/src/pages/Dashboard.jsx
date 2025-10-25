@@ -1,25 +1,30 @@
 import { Link } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
+import { useRealtime } from "../contexts/realtime-context"
 import { ProtectedRoute } from "../components/protected-route"
 import { Trophy, Target, Zap, Clock, CheckCircle2, ArrowRight } from "lucide-react"
 import { memo, useMemo, useState } from "react"
 
 const Dashboard = memo(() => {
   const { user } = useApp()
+  const { userStats } = useRealtime()
+  
+  const currentUser = userStats || user
 
-  const userData = useMemo(() => user || {
+  const userData = useMemo(() => currentUser || {
     name: 'User',
     level: 1,
     points: 0,
     rank: 999,
-    completedLabs: 0
-  }, [user])
+    completedLabs: 0,
+    completedRooms: 0
+  }, [currentUser])
 
   const stats = useMemo(() => [
     { label: "Level", value: userData.level, icon: Zap, color: "text-blue-400" },
     { label: "Points", value: userData.points.toLocaleString(), icon: Trophy, color: "text-yellow-400" },
     { label: "Global Rank", value: `#${userData.rank}`, icon: Target, color: "text-red-400" },
-    { label: "Labs Completed", value: userData.completedLabs, icon: CheckCircle2, color: "text-green-400" },
+    { label: "Rooms/Labs", value: `${userData.completedRooms || 0}/${userData.completedLabs || 0}`, icon: CheckCircle2, color: "text-green-400" },
   ], [userData])
 
   const [recentLabs, setRecentLabs] = useState([])

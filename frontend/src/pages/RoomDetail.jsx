@@ -4,10 +4,12 @@ import { ArrowLeft, Users, Clock, Crown, Send, Trophy, Target, Zap, CheckCircle,
 import { getRoomBySlug, submitExercise, submitQuiz, completeRoom } from "../services/rooms"
 import { updateProgress } from "../services/progress"
 import { useApp } from "../contexts/app-context"
+import { useRealtime } from "../contexts/realtime-context"
 
 const RoomDetail = memo(() => {
   const { slug } = useParams()
   const { user } = useApp()
+  const { triggerUpdate } = useRealtime()
   const navigate = useNavigate()
   
   console.log('🔗 URL slug parameter:', slug)
@@ -174,6 +176,9 @@ const RoomDetail = memo(() => {
       
       // Update user progress and leaderboard
       const progressResult = await updateProgress('room', slug, totalScore, timeSpent)
+      
+      // Trigger real-time update
+      triggerUpdate()
       
       setRoomCompleted(true)
       
