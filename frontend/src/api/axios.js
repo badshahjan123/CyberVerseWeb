@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || 'https://cyberverseweb-production.up.railway.app/api',
   withCredentials: true,
   timeout: 10000
 })
