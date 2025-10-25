@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  welcomeBonusGiven: {
+    type: Boolean,
+    default: false
+  },
   completedLabs: {
     type: Number,
     default: 0

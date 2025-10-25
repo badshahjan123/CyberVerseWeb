@@ -105,7 +105,8 @@ router.post('/login', [
         isPremium: user.isPremium,
         level: user.level,
         points: user.points,
-        completedLabs: user.completedLabs
+        completedLabs: user.completedLabs,
+        completedRooms: user.completedRooms
       }
     });
   } catch (error) {
@@ -130,6 +131,7 @@ router.get('/me', auth, async (req, res) => {
         level: req.user.level,
         points: req.user.points,
         completedLabs: req.user.completedLabs,
+        completedRooms: req.user.completedRooms,
         rank,
         achievements: req.user.achievements,
         avatar: req.user.avatar

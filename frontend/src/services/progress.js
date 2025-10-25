@@ -18,10 +18,12 @@ export const updateProgress = async (type, itemId, points, timeSpent) => {
 export const getLeaderboard = async (limit = 10) => {
   try {
     const response = await axios.get(`/progress/leaderboard?limit=${limit}`)
+    console.log('Leaderboard API response:', response.data)
     return response.data.data || []
   } catch (error) {
     console.error('Error fetching leaderboard:', error)
-    throw error
+    console.error('Error details:', error.response?.data)
+    throw new Error(error.response?.data?.message || 'Failed to fetch leaderboard')
   }
 }
 

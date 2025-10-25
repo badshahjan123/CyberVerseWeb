@@ -63,7 +63,7 @@ router.post('/update', auth, async (req, res) => {
   }
 });
 
-// Get leaderboard
+// Get leaderboard (public endpoint)
 router.get('/leaderboard', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
