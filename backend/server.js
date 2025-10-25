@@ -159,6 +159,7 @@ app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/progress', require('./routes/progress'));
 
 // Health check
 app.get('/api/health', (req, res) => {

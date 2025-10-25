@@ -2,6 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom"
 import { useState, memo, useEffect } from "react"
 import { ArrowLeft, Users, Clock, Crown, Send, Trophy, Target, Zap, CheckCircle, Play, BookOpen, Award } from "lucide-react"
 import { getRoomBySlug, submitExercise, submitQuiz, completeRoom } from "../services/rooms"
+import { updateProgress } from "../services/progress"
 import { useApp } from "../contexts/app-context"
 
 const RoomDetail = memo(() => {
@@ -168,24 +169,44 @@ const RoomDetail = memo(() => {
     const totalScore = topicPoints + exercisePoints + quizPoints
 
     try {
+      // Complete room in backend
       await completeRoom(slug, timeSpent, totalScore)
-    } catch (error) {
-      console.log('Room completion API failed, but marking as complete locally')
-    } finally {
+      
+      // Update user progress and leaderboard
+      const progressResult = await updateProgress('room', slug, totalScore, timeSpent)
+      
       setRoomCompleted(true)
-      const confirmed = window.confirm(
-        `🎉 Congratulations! Room completed successfully!\n\n` +
+      
+      let message = `🎉 Congratulations! Room completed successfully!\n\n` +
         `⏱️ Time spent: ${timeSpent} minutes\n` +
         `📚 Topics completed: ${completedTopics.size}/${room.topics?.length || 0}\n` +
         `💪 Exercises completed: ${completedExercises.size}/${room.exercises?.length || 0}\n` +
         `🧠 Quizzes completed: ${completedQuizzes.size}/${room.quizzes?.length || 0}\n` +
-        `🏆 Total Score: ${totalScore} points\n\n` +
-        `Would you like to explore more rooms?`
-      )
+        `🏆 Total Score: ${totalScore} points\n\n`
+      
+      if (progressResult?.data) {
+        message += `📊 Your Stats:\n` +
+          `🎯 Total Points: ${progressResult.data.points}\n` +
+          `⭐ Level: ${progressResult.data.level}\n` +
+          `🏅 Rank: #${progressResult.data.rank}\n` +
+          `🏠 Rooms: ${progressResult.data.completedRooms} | 🧪 Labs: ${progressResult.data.completedLabs}\n\n`
+        
+        if (progressResult.data.leveledUp) {
+          message += `🎊 LEVEL UP! You reached Level ${progressResult.data.level}!\n\n`
+        }
+      }
+      
+      message += `Would you like to explore more rooms?`
+      
+      const confirmed = window.confirm(message)
       
       if (confirmed) {
         navigate('/rooms')
       }
+    } catch (error) {
+      console.error('Room completion failed:', error)
+      setRoomCompleted(true)
+      alert('Room completed locally! Progress may not be saved to leaderboard.')
     }
   }
 
@@ -398,9 +419,9 @@ const RoomDetail = memo(() => {
                         
                         <button
                           onClick={handleNextTopic}
-                          disabled={currentTopic === room.topics.length - 1 || !isCurrentTopicCompleted}
+                          disabled={currentTopic === room.topics.length - 1 || completedTopics.size === 0}
                           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all"
-                          title={!isCurrentTopicCompleted ? "Complete current topic to continue" : ""}
+                          title={completedTopics.size === 0 ? "Complete first topic to unlock navigation" : ""}
                         >
                           Next →
                         </button>

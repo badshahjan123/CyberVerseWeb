@@ -1,7 +1,7 @@
 import { useEffect, useState, memo, useMemo, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
-import { getLeaderboard } from "../services/leaderboard"
+import { getLeaderboard } from "../services/progress"
 import { Trophy, Medal, Award, TrendingUp, Crown, Star, Zap, Target } from "lucide-react"
 
 const Leaderboard = memo(() => {
@@ -12,18 +12,28 @@ const Leaderboard = memo(() => {
   const [userRank, setUserRank] = useState(null)
 
   const fetchLeaderboard = useCallback(async () => {
-    const data = await getLeaderboard(activeTab, 20)
-    setLeaderboardData(data)
-    
-    if (user) {
-      const userPosition = data.findIndex(player => player.username === user.username || player.name === user.name)
-      if (userPosition !== -1) {
-        setUserRank(userPosition + 1)
-      } else {
-        setUserRank(user.rank || 999)
+    try {
+      const data = await getLeaderboard(50)
+      const formattedData = data.map(player => ({
+        ...player,
+        username: player.name,
+        trend: 'up'
+      }))
+      setLeaderboardData(formattedData)
+      
+      if (user) {
+        const userPosition = formattedData.findIndex(player => player.name === user.name)
+        if (userPosition !== -1) {
+          setUserRank(userPosition + 1)
+        } else {
+          setUserRank(999)
+        }
       }
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error)
+      setLeaderboardData([])
     }
-  }, [activeTab, user])
+  }, [user])
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -184,7 +194,7 @@ const Leaderboard = memo(() => {
                         )}
                       </div>
                       <p className="text-sm text-slate-400">
-                        Level {player.level} • {player.completedLabs} labs completed
+                        Level {player.level} • {player.completedRooms || 0} rooms • {player.completedLabs || 0} labs
                       </p>
                     </div>
                   </div>

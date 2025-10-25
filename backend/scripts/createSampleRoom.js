@@ -36,7 +36,7 @@ Prerequisites:
 • Familiarity with JavaScript (recommended)`,
       category: 'Development',
       difficulty: 'Beginner',
-      estimated_time_minutes: 120,
+      estimated_time_minutes: 20,
       creator: 'CyberVerse Team',
       tags: ['REST', 'API', 'Backend', 'JavaScript', 'Node.js'],
       prerequisites: [
@@ -76,7 +76,7 @@ GET /api/users/123
 POST /api/users
 PUT /api/users/123
 DELETE /api/users/123`,
-          estimated_time_minutes: 15
+          estimated_time_minutes: 3
         },
         {
           id: 2,
@@ -122,7 +122,7 @@ POST /api/users (201 Created)
   "email": "jane@example.com",
   "created_at": "2024-01-15T10:30:00Z"
 }`,
-          estimated_time_minutes: 20
+          estimated_time_minutes: 4
         },
         {
           id: 3,
@@ -162,7 +162,7 @@ Return appropriate HTTP status codes for different scenarios.
     }
   }
 }`,
-          estimated_time_minutes: 25
+          estimated_time_minutes: 5
         },
         {
           id: 4,
@@ -186,7 +186,7 @@ Best Practices:
 • Implement proper error handling
 • Validate data before database operations
 • Use transactions for complex operations`,
-          estimated_time_minutes: 20
+          estimated_time_minutes: 4
         },
         {
           id: 5,
@@ -207,7 +207,7 @@ Security Best Practices:
 • Validate and sanitize all inputs
 • Use proper password hashing
 • Implement CORS properly`,
-          estimated_time_minutes: 30
+          estimated_time_minutes: 4
         }
       ],
       exercises: [

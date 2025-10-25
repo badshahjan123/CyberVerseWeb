@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  completedRooms: {
+    type: Number,
+    default: 0
+  },
   achievements: [{
     name: String,
     description: String,
@@ -69,6 +73,12 @@ const userSchema = new mongoose.Schema({
   }],
   labProgress: [{
     labId: String,
+    completed: Boolean,
+    completedAt: Date,
+    score: Number
+  }],
+  roomProgress: [{
+    roomId: String,
     completed: Boolean,
     completedAt: Date,
     score: Number
