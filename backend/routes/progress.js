@@ -14,32 +14,67 @@ router.post('/update', auth, async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    let isFirstCompletion = false;
+    let pointsToAdd = 0;
+    let leveledUp = false;
+
+    if (type === 'room') {
+      // Check if room already completed
+      const existingProgress = user.roomProgress.find(p => p.roomId === itemId);
+      
+      if (existingProgress) {
+        // Room replay - update score but no additional points for completion count
+        const oldScore = existingProgress.score;
+        existingProgress.score = points;
+        existingProgress.completedAt = new Date();
+        
+        // Only add/subtract the difference in points
+        pointsToAdd = points - oldScore;
+      } else {
+        // First completion
+        isFirstCompletion = true;
+        pointsToAdd = points;
+        user.completedRooms += 1;
+        user.roomProgress.push({
+          roomId: itemId,
+          completed: true,
+          completedAt: new Date(),
+          score: points
+        });
+      }
+    } else if (type === 'lab') {
+      // Check if lab already completed
+      const existingProgress = user.labProgress.find(p => p.labId === itemId);
+      
+      if (existingProgress) {
+        // Lab replay - update score but no additional points for completion count
+        const oldScore = existingProgress.score;
+        existingProgress.score = points;
+        existingProgress.completedAt = new Date();
+        
+        // Only add/subtract the difference in points
+        pointsToAdd = points - oldScore;
+      } else {
+        // First completion
+        isFirstCompletion = true;
+        pointsToAdd = points;
+        user.completedLabs += 1;
+        user.labProgress.push({
+          labId: itemId,
+          completed: true,
+          completedAt: new Date(),
+          score: points
+        });
+      }
+    }
+
     // Update user points and level
-    user.points += points;
+    user.points += pointsToAdd;
     
     // Calculate new level (every 1000 points = 1 level)
     const newLevel = Math.floor(user.points / 1000) + 1;
-    const leveledUp = newLevel > user.level;
+    leveledUp = newLevel > user.level;
     user.level = newLevel;
-
-    // Update completion count
-    if (type === 'room') {
-      user.completedRooms += 1;
-      user.roomProgress.push({
-        roomId: itemId,
-        completed: true,
-        completedAt: new Date(),
-        score: points
-      });
-    } else if (type === 'lab') {
-      user.completedLabs += 1;
-      user.labProgress.push({
-        labId: itemId,
-        completed: true,
-        completedAt: new Date(),
-        score: points
-      });
-    }
 
     await user.save();
 
@@ -48,13 +83,16 @@ router.post('/update', auth, async (req, res) => {
 
     res.json({
       success: true,
+      message: isFirstCompletion ? `${type} completed successfully!` : `${type} replayed successfully!`,
       data: {
         points: user.points,
         level: user.level,
         rank,
         leveledUp,
         completedLabs: user.completedLabs,
-        completedRooms: user.completedRooms
+        completedRooms: user.completedRooms,
+        isFirstCompletion,
+        pointsAdded: pointsToAdd
       }
     });
   } catch (error) {
@@ -112,6 +150,51 @@ router.get('/stats', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Stats error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Check if user has completed a specific room/lab
+router.get('/check/:type/:itemId', auth, async (req, res) => {
+  try {
+    const { type, itemId } = req.params;
+    const userId = req.user.id;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    let completed = false;
+    let score = 0;
+    let completedAt = null;
+
+    if (type === 'room') {
+      const progress = user.roomProgress.find(p => p.roomId === itemId);
+      if (progress) {
+        completed = progress.completed;
+        score = progress.score;
+        completedAt = progress.completedAt;
+      }
+    } else if (type === 'lab') {
+      const progress = user.labProgress.find(p => p.labId === itemId);
+      if (progress) {
+        completed = progress.completed;
+        score = progress.score;
+        completedAt = progress.completedAt;
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        completed,
+        score,
+        completedAt
+      }
+    });
+  } catch (error) {
+    console.error('Check completion error:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

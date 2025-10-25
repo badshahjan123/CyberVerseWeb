@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom"
 import { useState, memo, useEffect } from "react"
 import { ArrowLeft, Users, Clock, Crown, Send, Trophy, Target, Zap, CheckCircle, Play, BookOpen, Award } from "lucide-react"
 import { getRoomBySlug, submitExercise, submitQuiz, completeRoom } from "../services/rooms"
-import { updateProgress } from "../services/progress"
+import { updateProgress, checkCompletion } from "../services/progress"
 import { useApp } from "../contexts/app-context"
 import { useRealtime } from "../contexts/realtime-context"
 
@@ -26,6 +26,8 @@ const RoomDetail = memo(() => {
   const [submittingQuiz, setSubmittingQuiz] = useState(null)
   const [startTime] = useState(Date.now())
   const [roomCompleted, setRoomCompleted] = useState(false)
+  const [completionData, setCompletionData] = useState(null)
+  const [isReplay, setIsReplay] = useState(false)
 
   useEffect(() => {
     let isMounted = true;
@@ -51,6 +53,24 @@ const RoomDetail = memo(() => {
         
         if (roomData) {
           setRoom(roomData);
+          
+          // Check if user has completed this room before
+          if (user) {
+            try {
+              const completion = await checkCompletion('room', slug);
+              if (completion.completed) {
+                setRoomCompleted(true);
+                setCompletionData({
+                  score: completion.score,
+                  completedAt: completion.completedAt
+                });
+                setIsReplay(true);
+                console.log('Room already completed:', completion);
+              }
+            } catch (error) {
+              console.log('No previous completion found');
+            }
+          }
         } else {
           throw new Error('No room data received');
         }
@@ -73,7 +93,7 @@ const RoomDetail = memo(() => {
     return () => {
       isMounted = false;
     };
-  }, [slug])
+  }, [slug, user])
 
   const handleTopicComplete = (topicIndex) => {
     setCompletedTopics(prev => new Set([...prev, topicIndex]))
@@ -181,16 +201,35 @@ const RoomDetail = memo(() => {
       triggerUpdate()
       
       setRoomCompleted(true)
+      setCompletionData({ score: totalScore, completedAt: new Date() })
       
-      let message = `🎉 Congratulations! Room completed successfully!\n\n` +
-        `⏱️ Time spent: ${timeSpent} minutes\n` +
+      const isFirstTime = progressResult?.data?.isFirstCompletion
+      const pointsAdded = progressResult?.data?.pointsAdded || 0
+      
+      let message = isFirstTime 
+        ? `🎉 Congratulations! Room completed for the first time!\n\n`
+        : `🔄 Room replayed successfully!\n\n`
+      
+      // Update completion data with new score
+      setCompletionData({ score: totalScore, completedAt: new Date() });
+      
+      if (!isFirstTime) {
+        // Keep replay status true since it's still a completed room
+        message += `\n🔄 Previous score updated in leaderboard and dashboard`
+      }
+      
+      message += `⏱️ Time spent: ${timeSpent} minutes\n` +
         `📚 Topics completed: ${completedTopics.size}/${room.topics?.length || 0}\n` +
         `💪 Exercises completed: ${completedExercises.size}/${room.exercises?.length || 0}\n` +
         `🧠 Quizzes completed: ${completedQuizzes.size}/${room.quizzes?.length || 0}\n` +
-        `🏆 Total Score: ${totalScore} points\n\n`
+        `🏆 Score: ${totalScore} points\n`
+      
+      if (!isFirstTime) {
+        message += `📈 Points ${pointsAdded >= 0 ? 'gained' : 'lost'}: ${Math.abs(pointsAdded)}\n`
+      }
       
       if (progressResult?.data) {
-        message += `📊 Your Stats:\n` +
+        message += `\n📊 Your Stats:\n` +
           `🎯 Total Points: ${progressResult.data.points}\n` +
           `⭐ Level: ${progressResult.data.level}\n` +
           `🏅 Rank: #${progressResult.data.rank}\n` +
@@ -201,17 +240,19 @@ const RoomDetail = memo(() => {
         }
       }
       
-      message += `Would you like to explore more rooms?`
+      message += `\nWould you like to explore more rooms?`
       
       const confirmed = window.confirm(message)
       
       if (confirmed) {
         navigate('/rooms')
+      } else if (!isFirstTime) {
+        // Show updated completion banner
+        window.location.reload()
       }
     } catch (error) {
       console.error('Room completion failed:', error)
-      setRoomCompleted(true)
-      alert('Room completed locally! Progress may not be saved to leaderboard.')
+      alert('Room completion failed! Please try again.')
     }
   }
 
@@ -316,7 +357,7 @@ const RoomDetail = memo(() => {
                 </span>
               </div>
             </div>
-            {roomCompleted && (
+            {roomCompleted && !isReplay && (
               <div className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg">
                 <CheckCircle className="h-5 w-5" />
                 Completed
@@ -332,6 +373,29 @@ const RoomDetail = memo(() => {
             </div>
           </div>
         </div>
+
+        {/* Completion Status Banner */}
+        {roomCompleted && (
+          <div className="card rounded-xl bg-green-800/20 border border-green-500/30 mb-6">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-6 w-6 text-green-400" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-400">Already Completed</h3>
+                    <p className="text-sm text-slate-300">
+                      Completed on {completionData ? new Date(completionData.completedAt).toLocaleDateString() : 'Unknown'} 
+                      {completionData && ` • Score: ${completionData.score} points`}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-sm text-slate-400">
+                  You can replay this room to improve your score
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
@@ -582,14 +646,20 @@ const RoomDetail = memo(() => {
 
             <div className="text-center">
               {canCompleteRoom ? (
-                <button
-                  onClick={handleCompleteRoom}
-                  disabled={roomCompleted}
-                  className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 disabled:opacity-50 text-white rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all"
-                >
-                  <Trophy className="h-5 w-5" />
-                  {roomCompleted ? 'Room Completed!' : 'Complete Room'}
-                </button>
+                <div className="space-y-3">
+                  <button
+                    onClick={handleCompleteRoom}
+                    className={`px-8 py-3 ${isReplay ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700' : 'bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700'} text-white rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all`}
+                  >
+                    <Trophy className="h-5 w-5" />
+                    {isReplay ? 'Replay Room' : 'Complete Room'}
+                  </button>
+                  {isReplay && (
+                    <div className="text-sm text-slate-400 mt-2">
+                      ⚠️ Your new score will replace the previous score of {completionData?.score || 0} points
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="text-center">
                   <div className="px-8 py-3 bg-slate-600/50 border border-slate-500 text-slate-400 rounded-lg font-semibold flex items-center gap-2 mx-auto cursor-not-allowed">

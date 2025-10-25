@@ -275,45 +275,41 @@ router.post('/:slug/complete', auth, async (req, res) => {
     }
 
     // Check if user already completed this room
-    const existingCompletion = room.completedBy.find(
+    const existingCompletionIndex = room.completedBy.findIndex(
       completion => completion.userId.toString() === req.user.id
     );
 
-    if (existingCompletion) {
-      return res.status(400).json({
-        success: false,
-        message: 'Room already completed'
+    let isReplay = false;
+    
+    if (existingCompletionIndex !== -1) {
+      // Update existing completion (replay)
+      isReplay = true;
+      room.completedBy[existingCompletionIndex] = {
+        userId: req.user.id,
+        score: finalScore || 0,
+        timeSpent: timeSpent || 0,
+        completedAt: new Date()
+      };
+    } else {
+      // Add new completion record
+      room.completedBy.push({
+        userId: req.user.id,
+        score: finalScore || 0,
+        timeSpent: timeSpent || 0,
+        completedAt: new Date()
       });
     }
-
-    // Add completion record
-    room.completedBy.push({
-      userId: req.user.id,
-      score: finalScore || 0,
-      timeSpent: timeSpent || 0
-    });
+    
     await room.save();
-
-    // Update user stats
-    const user = await User.findById(req.user.id);
-    if (user) {
-      user.completedRooms = (user.completedRooms || 0) + 1;
-      user.totalTimeSpent = (user.totalTimeSpent || 0) + (timeSpent || 0);
-      
-      // Calculate new level based on points
-      const newLevel = Math.floor((user.points || 0) / 1000) + 1;
-      user.level = Math.max(user.level || 1, newLevel);
-      
-      await user.save();
-    }
 
     res.json({
       success: true,
-      message: 'Room completed successfully!',
+      message: isReplay ? 'Room replayed successfully!' : 'Room completed successfully!',
       data: {
         completedAt: new Date(),
         score: finalScore || 0,
-        timeSpent: timeSpent || 0
+        timeSpent: timeSpent || 0,
+        isReplay
       }
     });
   } catch (error) {

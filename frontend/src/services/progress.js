@@ -36,3 +36,13 @@ export const getUserStats = async () => {
     throw error
   }
 }
+
+export const checkCompletion = async (type, itemId) => {
+  try {
+    const response = await axios.get(`/progress/check/${type}/${itemId}`)
+    return response.data.data
+  } catch (error) {
+    console.error('Error checking completion:', error)
+    throw error
+  }
+}
