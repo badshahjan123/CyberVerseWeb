@@ -21,21 +21,9 @@ const Profile = memo(() => {
     nextLevelProgress: 65
   }), [user])
 
-  const achievements = useMemo(() => [
-    { id: 1, name: "First Steps", description: "Complete your first lab", icon: Target, earned: true, rarity: "common" },
-    { id: 2, name: "Speed Demon", description: "Complete a lab in under 30 minutes", icon: Clock, earned: true, rarity: "rare" },
-    { id: 3, name: "Team Player", description: "Join 5 attack rooms", icon: User, earned: true, rarity: "uncommon" },
-    { id: 4, name: "Elite Hacker", description: "Complete 10 expert-level labs", icon: Crown, earned: false, rarity: "legendary" },
-    { id: 5, name: "Mentor", description: "Help 50 other users", icon: Star, earned: false, rarity: "epic" },
-    { id: 6, name: "Champion", description: "Win 3 CTF competitions", icon: Trophy, earned: true, rarity: "epic" }
-  ], [])
+  const [achievements, setAchievements] = useState([])
 
-  const recentActivity = useMemo(() => [
-    { type: "lab_complete", title: "SQL Injection Fundamentals", points: 100, time: "2 hours ago" },
-    { type: "room_join", title: "Red Team Exercise", points: 0, time: "1 day ago" },
-    { type: "achievement", title: "Speed Demon", points: 50, time: "2 days ago" },
-    { type: "lab_complete", title: "XSS Exploitation", points: 150, time: "3 days ago" }
-  ], [])
+  const [recentActivity, setRecentActivity] = useState([])
 
   const getRarityColor = (rarity) => {
     const colors = {

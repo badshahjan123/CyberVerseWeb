@@ -128,68 +128,7 @@ CertificateCard.displayName = 'CertificateCard'
 const CertificatesPage = memo(() => {
   const [filter, setFilter] = useState('all') // all, earned, locked
 
-  const certificates = [
-    {
-      id: 1,
-      title: "Web Security Fundamentals",
-      category: "Web Security",
-      description: "Master the basics of web application security including XSS, CSRF, and SQL injection.",
-      earned: true,
-      earnedDate: "Jan 15, 2024",
-      score: 95,
-      requirement: null
-    },
-    {
-      id: 2,
-      title: "Network Security Expert",
-      category: "Network Security",
-      description: "Advanced network security concepts including firewalls, IDS/IPS, and VPNs.",
-      earned: true,
-      earnedDate: "Jan 20, 2024",
-      score: 88,
-      requirement: null
-    },
-    {
-      id: 3,
-      title: "Penetration Testing Professional",
-      category: "Penetration Testing",
-      description: "Comprehensive penetration testing methodology and tools.",
-      earned: false,
-      earnedDate: null,
-      score: null,
-      requirement: "5 Advanced Labs"
-    },
-    {
-      id: 4,
-      title: "Cryptography Specialist",
-      category: "Cryptography",
-      description: "Deep dive into encryption, hashing, and cryptographic protocols.",
-      earned: false,
-      earnedDate: null,
-      score: null,
-      requirement: "Cryptography Course"
-    },
-    {
-      id: 5,
-      title: "Cloud Security Architect",
-      category: "Cloud Security",
-      description: "Secure cloud infrastructure and services across AWS, Azure, and GCP.",
-      earned: true,
-      earnedDate: "Feb 5, 2024",
-      score: 92,
-      requirement: null
-    },
-    {
-      id: 6,
-      title: "Malware Analysis Expert",
-      category: "Malware Analysis",
-      description: "Analyze and reverse engineer malicious software.",
-      earned: false,
-      earnedDate: null,
-      score: null,
-      requirement: "10 Expert Labs"
-    }
-  ]
+  const [certificates, setCertificates] = useState([])
 
   const filteredCertificates = certificates.filter(cert => {
     if (filter === 'earned') return cert.earned

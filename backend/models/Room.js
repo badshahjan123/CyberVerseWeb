@@ -1,37 +1,92 @@
 const mongoose = require('mongoose');
 
 const roomSchema = new mongoose.Schema({
-  name: {
+  slug: {
     type: String,
-    required: [true, 'Room name is required'],
-    trim: true,
-    maxlength: [100, 'Room name cannot exceed 100 characters']
+    required: true,
+    unique: true,
+    trim: true
   },
-  description: {
+  title: {
     type: String,
-    required: [true, 'Room description is required'],
-    maxlength: [500, 'Description cannot exceed 500 characters']
+    required: [true, 'Room title is required'],
+    trim: true,
+    maxlength: [100, 'Room title cannot exceed 100 characters']
+  },
+  short_description: {
+    type: String,
+    required: [true, 'Short description is required'],
+    maxlength: [200, 'Short description cannot exceed 200 characters']
+  },
+  long_description_markdown: {
+    type: String,
+    required: [true, 'Long description is required']
   },
   difficulty: {
     type: String,
-    enum: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
+    enum: ['Beginner', 'Intermediate', 'Advanced'],
     required: true
   },
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: ['Web Security', 'Network Security', 'Cryptography', 'Forensics', 'Reverse Engineering', 'OSINT', 'Mobile Security', 'Cloud Security']
+    enum: ['Development', 'Networking', 'Web', 'DevOps', 'Misc']
   },
-  points: {
+  tags: [String],
+  cover_image_url: String,
+  creator: {
+    type: String,
+    default: 'CyberVerse Team'
+  },
+  estimated_time_minutes: {
     type: Number,
     required: true,
-    min: [10, 'Points must be at least 10'],
-    max: [1000, 'Points cannot exceed 1000']
+    min: [5, 'Estimated time must be at least 5 minutes']
   },
-  isPremium: {
-    type: Boolean,
-    default: false
-  },
+  prerequisites: [String],
+  learning_objectives: [String],
+  topics: [{
+    id: Number,
+    title: String,
+    order: Number,
+    estimated_time_minutes: Number,
+    content_markdown: String
+  }],
+  quizzes: [{
+    id: Number,
+    title: String,
+    order: Number,
+    time_limit_seconds: Number,
+    pass_percentage: Number,
+    questions: [{
+      id: Number,
+      type: {
+        type: String,
+        enum: ['single', 'multi', 'short']
+      },
+      question_text: String,
+      options: [String],
+      correct_answer: mongoose.Schema.Types.Mixed,
+      points: Number,
+      explanation: String
+    }]
+  }],
+  exercises: [{
+    id: Number,
+    title: String,
+    order: Number,
+    type: {
+      type: String,
+      enum: ['static', 'flag-based', 'docker-lab']
+    },
+    description_markdown: String,
+    hint: String,
+    expected_flag: String,
+    auto_validate: Boolean,
+    points: Number,
+    admin_note: String
+  }],
+  additional_notes: String,
   isActive: {
     type: Boolean,
     default: true
@@ -45,17 +100,12 @@ const roomSchema = new mongoose.Schema({
       type: Date,
       default: Date.now
     },
-    score: Number
+    score: Number,
+    timeSpent: Number
   }],
-  tags: [String],
-  estimatedTime: {
-    type: Number, // in minutes
-    required: true
-  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   }
 }, {
   timestamps: true
@@ -63,6 +113,8 @@ const roomSchema = new mongoose.Schema({
 
 // Index for better performance
 roomSchema.index({ category: 1, difficulty: 1 });
-roomSchema.index({ isActive: 1, isPremium: 1 });
+roomSchema.index({ isActive: 1 });
+roomSchema.index({ slug: 1 });
+roomSchema.index({ tags: 1 });
 
 module.exports = mongoose.model('Room', roomSchema);

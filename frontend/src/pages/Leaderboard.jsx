@@ -37,56 +37,7 @@ const Leaderboard = memo(() => {
     }
   }, [isAuthenticated, fetchLeaderboard])
 
-  const globalLeaderboard = useMemo(() => [
-    {
-      rank: 1,
-      username: "CyberNinja",
-      points: 45230,
-      level: 28,
-      completedLabs: 156,
-      trend: "up",
-    },
-    {
-      rank: 2,
-      username: "H4ck3rPr0",
-      points: 42180,
-      level: 26,
-      completedLabs: 148,
-      trend: "same",
-    },
-    {
-      rank: 3,
-      username: "SecurityQueen",
-      points: 39540,
-      level: 25,
-      completedLabs: 142,
-      trend: "up",
-    },
-    {
-      rank: 4,
-      username: "ByteBandit",
-      points: 37920,
-      level: 24,
-      completedLabs: 138,
-      trend: "down",
-    },
-    {
-      rank: 5,
-      username: "CodeBreaker",
-      points: 35610,
-      level: 23,
-      completedLabs: 131,
-      trend: "up",
-    },
-    {
-      rank: 6,
-      username: "PenTestPro",
-      points: 33890,
-      level: 22,
-      completedLabs: 127,
-      trend: "same",
-    },
-  ], [])
+  const [globalLeaderboard, setGlobalLeaderboard] = useState([])
 
   const getRankIcon = (rank) => {
     if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-400" />
@@ -200,7 +151,7 @@ const Leaderboard = memo(() => {
           </div>
           <div className="p-6">
             <div className="space-y-3">
-              {(leaderboardData.length > 0 ? leaderboardData : globalLeaderboard).map((player) => (
+              {leaderboardData.length > 0 ? leaderboardData.map((player) => (
                 <div
                   key={player.rank}
                   className={`list-item flex items-center justify-between rounded-lg border p-4 transition-colors ${
@@ -250,7 +201,11 @@ const Leaderboard = memo(() => {
                     {player.trend === "down" && <TrendingUp className="h-5 w-5 text-red-400 rotate-180" />}
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-8">
+                  <p className="text-slate-400">No leaderboard data available</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

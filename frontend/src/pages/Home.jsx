@@ -73,10 +73,10 @@ const Home = memo(() => {
   ], [])
 
   const categories = useMemo(() => [
-    { name: "Web Security", icon: Lock, count: 45, color: "coral" },
-    { name: "Network Pentesting", icon: Network, count: 38, color: "teal" },
-    { name: "Cryptography", icon: Shield, count: 27, color: "glow" },
-    { name: "Forensics", icon: Zap, count: 31, color: "glass" },
+    { name: "Web Security", icon: Lock, count: 0, color: "coral" },
+    { name: "Network Pentesting", icon: Network, count: 0, color: "teal" },
+    { name: "Cryptography", icon: Shield, count: 0, color: "glow" },
+    { name: "Forensics", icon: Zap, count: 0, color: "glass" },
   ], [])
 
   // Memoized navigation handlers
@@ -130,11 +130,11 @@ const Home = memo(() => {
             {/* Compact Stats */}
             <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary-400">50K+</div>
+                <div className="text-2xl font-bold text-primary-400">0</div>
                 <div className="text-xs text-slate-500">Learners</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-teal-400">200+</div>
+                <div className="text-2xl font-bold text-teal-400">0</div>
                 <div className="text-xs text-slate-500">Labs</div>
               </div>
               <div className="text-center">
@@ -186,7 +186,7 @@ const Home = memo(() => {
               <Users className="h-7 w-7 text-white" />
             </div>
             <h2 className="mb-4 text-2xl font-bold text-slate-100">
-              Join 50,000+ Security Professionals
+              Join Security Professionals
             </h2>
             <p className="mb-8 text-slate-300 max-w-2xl mx-auto">
               Start your cybersecurity journey today with hands-on training and real-world scenarios

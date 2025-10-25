@@ -112,7 +112,7 @@ function AppContent() {
                   <Route path="/register" element={<Register />} />
 
                   <Route path="/rooms" element={<Rooms />} />
-                  <Route path="/rooms/:id" element={<RoomDetail />} />
+                  <Route path="/rooms/:slug" element={<RoomDetail />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />

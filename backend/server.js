@@ -11,6 +11,7 @@ const userRoutes = require('./routes/users');
 const adminRoutes = require('./routes/admin');
 const adminAuthRoutes = require('./routes/adminAuth');
 const paymentRoutes = require('./routes/payment');
+const roomRoutes = require('./routes/rooms');
 const User = require('./models/User');
 const Room = require('./models/Room');
 const Lab = require('./models/Lab');
@@ -157,6 +158,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin/auth', adminAuthRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

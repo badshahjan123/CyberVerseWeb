@@ -49,20 +49,7 @@ const Labs = memo(() => {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedDifficulty, setSelectedDifficulty] = useState("all")
 
-  const mockLabs = useMemo(() => [
-    { id: 1, title: "Ethical Hacking Fundamentals", difficulty: "beginner", duration: "45 min", participants: "1.2k", points: 100, description: "Learn ethical hacking principles and methodologies", category: "ethical" },
-    { id: 2, title: "Password Cracking Techniques", difficulty: "intermediate", duration: "60 min", participants: "856", points: 150, description: "Master password security and cracking methods", category: "ethical" },
-    { id: 3, title: "Penetration Testing Lab", difficulty: "expert", duration: "120 min", participants: "234", points: 300, description: "Advanced penetration testing methodologies", category: "ethical", isPremium: true },
-    { id: 4, title: "React Development Mastery", difficulty: "intermediate", duration: "90 min", participants: "645", points: 200, description: "Build modern React applications", category: "web" },
-    { id: 5, title: "Python Programming Pro", difficulty: "advanced", duration: "75 min", participants: "423", points: 250, description: "Advanced Python programming concepts", category: "development", isPremium: true },
-    { id: 6, title: "Linux Command Line Ninja", difficulty: "advanced", duration: "100 min", participants: "567", points: 275, description: "Master Linux terminal and system administration", category: "system" },
-    { id: 7, title: "Full-Stack Web Development", difficulty: "advanced", duration: "85 min", participants: "312", points: 280, description: "Complete web application development", category: "web", isPremium: true },
-    { id: 8, title: "Network Security Essentials", difficulty: "intermediate", duration: "70 min", participants: "489", points: 180, description: "Network security fundamentals and best practices", category: "network" },
-    { id: 9, title: "Digital Forensics Investigation", difficulty: "beginner", duration: "55 min", participants: "723", points: 120, description: "Learn digital evidence analysis techniques", category: "forensics" },
-    { id: 10, title: "Malware Analysis Workshop", difficulty: "expert", duration: "150 min", participants: "156", points: 350, description: "Advanced malware reverse engineering", category: "ethical", isPremium: true },
-    { id: 11, title: "Clean Code Architecture", difficulty: "intermediate", duration: "65 min", participants: "634", points: 160, description: "Write maintainable and scalable code", category: "development" },
-    { id: 12, title: "Cloud DevOps Mastery", difficulty: "advanced", duration: "95 min", participants: "298", points: 290, description: "AWS/Azure DevOps and automation", category: "cloud", isPremium: true }
-  ], [])
+  const [labs, setLabs] = useState([])
 
   const categories = useMemo(() => [
     { value: "all", label: "All Categories" },
@@ -82,13 +69,13 @@ const Labs = memo(() => {
   ], [])
 
   const filteredLabs = useMemo(() => {
-    return mockLabs.filter(lab => {
+    return labs.filter(lab => {
       const matchesSearch = lab.title.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = selectedCategory === "all" || lab.category === selectedCategory
       const matchesDifficulty = selectedDifficulty === "all" || lab.difficulty === selectedDifficulty
       return matchesSearch && matchesCategory && matchesDifficulty
     })
-  }, [mockLabs, searchTerm, selectedCategory, selectedDifficulty])
+  }, [labs, searchTerm, selectedCategory, selectedDifficulty])
 
   const handleSearchChange = useCallback((e) => setSearchTerm(e.target.value), [])
   const handleCategoryChange = useCallback((e) => setSelectedCategory(e.target.value), [])
@@ -153,70 +140,20 @@ const Labs = memo(() => {
           </div>
         </div>
 
-        {selectedCategory === "all" ? (
-          <div className="space-y-8">
-            {["ethical", "web", "development", "network", "system", "cloud"].map(category => {
-              const categoryLabs = filteredLabs.filter(lab => lab.category === category)
-              if (categoryLabs.length === 0) return null
-              
-              const categoryNames = {
-                ethical: "Ethical Hacking & Security",
-                network: "Network Administration",
-                web: "Web Development", 
-                system: "System Administration",
-                development: "Programming & Development",
-                cloud: "Cloud Computing",
-                forensics: "Digital Forensics"
-              }
-              
-              return (
-                <div key={category} className="mb-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
-                    <h2 className="text-2xl font-bold text-white">{categoryNames[category]}</h2>
-                    <div className="px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-sm">
-                      {categoryLabs.length} Labs
-                    </div>
-                  </div>
-                  
-                  <div className={`grid gap-6 ${
-                    viewMode === "grid" 
-                      ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" 
-                      : "grid-cols-1"
-                  }`}>
-                    {categoryLabs.map((lab) => (
-                      <LabCard key={lab.id} lab={lab} />
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
+        {filteredLabs.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-slate-400 text-lg">No labs available</p>
+            <p className="text-slate-500 text-sm mt-2">Check back later for new content</p>
           </div>
         ) : (
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
-              <h2 className="text-2xl font-bold text-white">Filtered Labs</h2>
-              <div className="px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-sm">
-                {filteredLabs.length} Labs
-              </div>
-            </div>
-            
-            <div className={`grid gap-6 ${
-              viewMode === "grid" 
-                ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" 
-                : "grid-cols-1"
-            }`}>
-              {filteredLabs.map((lab) => (
-                <LabCard key={lab.id} lab={lab} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {filteredLabs.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-slate-400">No labs found matching your criteria</p>
+          <div className={`grid gap-4 ${
+            viewMode === "grid" 
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" 
+              : "grid-cols-1"
+          }`}>
+            {filteredLabs.map(lab => (
+              <LabCard key={lab.id} lab={lab} />
+            ))}
           </div>
         )}
       </div>

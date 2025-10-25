@@ -8,26 +8,20 @@ const LabDetail = memo(() => {
   const [currentStep, setCurrentStep] = useState(1)
   const [timeElapsed, setTimeElapsed] = useState(0)
 
-  const lab = useMemo(() => ({
+  const [lab, setLab] = useState({
     id: parseInt(id),
-    title: "SQL Injection Fundamentals",
-    description: "Learn SQL injection basics and prevention techniques through hands-on practice",
+    title: "Loading...",
+    description: "Loading lab details...",
     difficulty: "beginner",
-    duration: "45 min",
-    participants: "1.2k",
-    points: 100,
+    duration: "0 min",
+    participants: "0",
+    points: 0,
     category: "web",
-    totalSteps: 5,
+    totalSteps: 0,
     isPremium: false
-  }), [id])
+  })
 
-  const steps = useMemo(() => [
-    { id: 1, title: "Introduction to SQL Injection", completed: true },
-    { id: 2, title: "Identifying Vulnerable Parameters", completed: true },
-    { id: 3, title: "Basic SQL Injection Attack", completed: false, current: true },
-    { id: 4, title: "Data Extraction Techniques", completed: false },
-    { id: 5, title: "Prevention and Mitigation", completed: false }
-  ], [])
+  const [steps, setSteps] = useState([])
 
   const handleStart = () => {
     setIsRunning(!isRunning)

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
 import { ProtectedRoute } from "../components/protected-route"
 import { Trophy, Target, Zap, Clock, CheckCircle2, ArrowRight } from "lucide-react"
-import { memo, useMemo } from "react"
+import { memo, useMemo, useState } from "react"
 
 const Dashboard = memo(() => {
   const { user } = useApp()
@@ -22,16 +22,9 @@ const Dashboard = memo(() => {
     { label: "Labs Completed", value: userData.completedLabs, icon: CheckCircle2, color: "text-green-400" },
   ], [userData])
 
-  const recentLabs = useMemo(() => [
-    { id: 1, title: "SQL Injection Basics", category: "Web Security", difficulty: "Easy", progress: 100 },
-    { id: 2, title: "Network Reconnaissance", category: "Pentesting", difficulty: "Medium", progress: 65 },
-    { id: 3, title: "Buffer Overflow Attack", category: "Binary Exploitation", difficulty: "Hard", progress: 30 },
-  ], [])
+  const [recentLabs, setRecentLabs] = useState([])
 
-  const upcomingRooms = useMemo(() => [
-    { id: 1, title: "Friday Night Hack", participants: 142, startsIn: "2h 15m" },
-    { id: 2, title: "CTF Championship", participants: 328, startsIn: "5h 30m" },
-  ], [])
+  const [upcomingRooms, setUpcomingRooms] = useState([])
 
   return (
     <ProtectedRoute>
