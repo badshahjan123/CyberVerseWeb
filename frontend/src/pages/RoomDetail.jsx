@@ -74,9 +74,43 @@ const RoomDetail = memo(() => {
 
   const handleTopicComplete = (topicIndex) => {
     setCompletedTopics(prev => new Set([...prev, topicIndex]))
-    if (topicIndex === currentTopic && topicIndex < (room?.topics?.length || 0) - 1) {
-      setCurrentTopic(topicIndex + 1)
+    
+    // Auto-advance to next topic after completion
+    setTimeout(() => {
+      if (topicIndex < (room?.topics?.length || 0) - 1) {
+        setCurrentTopic(topicIndex + 1)
+      }
+    }, 500)
+  }
+
+  const handleNextTopic = () => {
+    if (currentTopic < (room?.topics?.length || 0) - 1) {
+      setCurrentTopic(currentTopic + 1)
     }
+  }
+
+  const handlePreviousTopic = () => {
+    if (currentTopic > 0) {
+      setCurrentTopic(currentTopic - 1)
+    }
+  }
+
+  const isCurrentTopicCompleted = completedTopics.has(currentTopic)
+  const allTopicsCompleted = room?.topics?.length > 0 && completedTopics.size === room.topics.length
+  const hasRequiredExercises = room?.exercises?.length > 0
+  const hasRequiredQuizzes = room?.quizzes?.length > 0
+  
+  // Calculate completion requirements
+  const requiredExercisesCompleted = !hasRequiredExercises || completedExercises.size >= Math.ceil((room.exercises?.length || 0) * 0.7) // 70% of exercises
+  const requiredQuizzesCompleted = !hasRequiredQuizzes || completedQuizzes.size >= Math.ceil((room.quizzes?.length || 0) * 0.5) // 50% of quizzes
+  
+  const canCompleteRoom = allTopicsCompleted && requiredExercisesCompleted && requiredQuizzesCompleted
+  
+  const getCompletionMessage = () => {
+    if (!allTopicsCompleted) return `Complete all ${room.topics?.length || 0} topics`
+    if (!requiredExercisesCompleted) return `Complete at least ${Math.ceil((room.exercises?.length || 0) * 0.7)} exercises`
+    if (!requiredQuizzesCompleted) return `Complete at least ${Math.ceil((room.quizzes?.length || 0) * 0.5)} quizzes`
+    return 'Ready to complete!'
   }
 
   const handleExerciseSubmit = async (exerciseId) => {
@@ -122,8 +156,16 @@ const RoomDetail = memo(() => {
   }
 
   const handleCompleteRoom = async () => {
+    if (!canCompleteRoom) {
+      alert('Please complete all required content before finishing the room.')
+      return
+    }
+
     const timeSpent = Math.floor((Date.now() - startTime) / 1000 / 60)
-    const totalScore = completedTopics.size * 100
+    const topicPoints = completedTopics.size * 100
+    const exercisePoints = completedExercises.size * 50
+    const quizPoints = completedQuizzes.size * 75
+    const totalScore = topicPoints + exercisePoints + quizPoints
 
     try {
       await completeRoom(slug, timeSpent, totalScore)
@@ -134,7 +176,10 @@ const RoomDetail = memo(() => {
       const confirmed = window.confirm(
         `🎉 Congratulations! Room completed successfully!\n\n` +
         `⏱️ Time spent: ${timeSpent} minutes\n` +
-        `🏆 Score: ${totalScore} points\n\n` +
+        `📚 Topics completed: ${completedTopics.size}/${room.topics?.length || 0}\n` +
+        `💪 Exercises completed: ${completedExercises.size}/${room.exercises?.length || 0}\n` +
+        `🧠 Quizzes completed: ${completedQuizzes.size}/${room.quizzes?.length || 0}\n` +
+        `🏆 Total Score: ${totalScore} points\n\n` +
         `Would you like to explore more rooms?`
       )
       
@@ -267,7 +312,7 @@ const RoomDetail = memo(() => {
             {room.topics && room.topics.length > 0 && (
               <div className="card rounded-xl bg-slate-800/30 border border-slate-700/50 mb-6">
                 <div className="p-6 border-b border-slate-700/50">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold text-white flex items-center gap-2">
                       <BookOpen className="h-5 w-5" />
                       Learning Topics
@@ -276,10 +321,36 @@ const RoomDetail = memo(() => {
                       {currentTopic + 1} of {room.topics.length}
                     </span>
                   </div>
+                  
+                  {/* Topic Navigation */}
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {room.topics.map((topic, index) => (
+                      <button
+                        key={topic.id}
+                        onClick={() => setCurrentTopic(index)}
+                        className={`flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          index === currentTopic
+                            ? 'bg-blue-600 text-white'
+                            : completedTopics.has(index)
+                            ? 'bg-green-600/20 border border-green-500 text-green-400'
+                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {completedTopics.has(index) ? (
+                            <CheckCircle className="h-3 w-3" />
+                          ) : (
+                            <span className="text-xs">{index + 1}</span>
+                          )}
+                          <span className="truncate max-w-[120px]">{topic.title}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="p-6">
                   {room.topics.map((topic, index) => (
-                    <div key={topic.id} className={`mb-6 ${index !== currentTopic ? 'hidden' : ''}`}>
+                    <div key={topic.id} className={`${index !== currentTopic ? 'hidden' : ''}`}>
                       <div className="flex items-center gap-3 mb-4">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           completedTopics.has(index) ? 'bg-green-600' : 
@@ -299,26 +370,39 @@ const RoomDetail = memo(() => {
                           {topic.content_markdown}
                         </div>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <button
-                          onClick={() => setCurrentTopic(Math.max(0, currentTopic - 1))}
+                          onClick={handlePreviousTopic}
                           disabled={currentTopic === 0}
-                          className="px-4 py-2 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 text-white rounded-lg"
+                          className="px-4 py-2 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all"
                         >
-                          Previous
+                          ← Previous
                         </button>
+                        
+                        <div className="flex gap-3">
+                          {!isCurrentTopicCompleted ? (
+                            <button
+                              onClick={() => handleTopicComplete(index)}
+                              className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all flex items-center gap-2"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              Mark Complete
+                            </button>
+                          ) : (
+                            <div className="px-6 py-2 bg-green-600/20 border border-green-500 text-green-400 rounded-lg font-medium flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4" />
+                              Completed
+                            </div>
+                          )}
+                        </div>
+                        
                         <button
-                          onClick={() => handleTopicComplete(index)}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                          onClick={handleNextTopic}
+                          disabled={currentTopic === room.topics.length - 1 || !isCurrentTopicCompleted}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-all"
+                          title={!isCurrentTopicCompleted ? "Complete current topic to continue" : ""}
                         >
-                          Mark Complete
-                        </button>
-                        <button
-                          onClick={() => setCurrentTopic(Math.min(room.topics.length - 1, currentTopic + 1))}
-                          disabled={currentTopic === room.topics.length - 1}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg"
-                        >
-                          Next
+                          Next →
                         </button>
                       </div>
                     </div>
@@ -471,14 +555,44 @@ const RoomDetail = memo(() => {
             )}
 
             <div className="text-center">
-              <button
-                onClick={handleCompleteRoom}
-                disabled={roomCompleted}
-                className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 disabled:opacity-50 text-white rounded-lg font-semibold flex items-center gap-2 mx-auto"
-              >
-                <Trophy className="h-5 w-5" />
-                {roomCompleted ? 'Room Completed!' : 'Complete Room'}
-              </button>
+              {canCompleteRoom ? (
+                <button
+                  onClick={handleCompleteRoom}
+                  disabled={roomCompleted}
+                  className="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 disabled:opacity-50 text-white rounded-lg font-semibold flex items-center gap-2 mx-auto transition-all"
+                >
+                  <Trophy className="h-5 w-5" />
+                  {roomCompleted ? 'Room Completed!' : 'Complete Room'}
+                </button>
+              ) : (
+                <div className="text-center">
+                  <div className="px-8 py-3 bg-slate-600/50 border border-slate-500 text-slate-400 rounded-lg font-semibold flex items-center gap-2 mx-auto cursor-not-allowed">
+                    <Trophy className="h-5 w-5" />
+                    {getCompletionMessage()}
+                  </div>
+                  <div className="text-sm text-slate-500 mt-3 space-y-1">
+                    <div className={`flex items-center justify-center gap-2 ${
+                      allTopicsCompleted ? 'text-green-400' : 'text-slate-500'
+                    }`}>
+                      {allTopicsCompleted ? '✓' : '○'} Topics: {completedTopics.size}/{room.topics?.length || 0}
+                    </div>
+                    {hasRequiredExercises && (
+                      <div className={`flex items-center justify-center gap-2 ${
+                        requiredExercisesCompleted ? 'text-green-400' : 'text-slate-500'
+                      }`}>
+                        {requiredExercisesCompleted ? '✓' : '○'} Exercises: {completedExercises.size}/{room.exercises?.length || 0} (need {Math.ceil((room.exercises?.length || 0) * 0.7)})
+                      </div>
+                    )}
+                    {hasRequiredQuizzes && (
+                      <div className={`flex items-center justify-center gap-2 ${
+                        requiredQuizzesCompleted ? 'text-green-400' : 'text-slate-500'
+                      }`}>
+                        {requiredQuizzesCompleted ? '✓' : '○'} Quizzes: {completedQuizzes.size}/{room.quizzes?.length || 0} (need {Math.ceil((room.quizzes?.length || 0) * 0.5)})
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
