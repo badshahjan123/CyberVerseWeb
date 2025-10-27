@@ -7,7 +7,7 @@ import { Shield, Loader2, Check, ArrowRight } from "lucide-react"
 const LoginPage = memo(() => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { login, isAuthenticated, user } = useApp()
+  const { login, isAuthenticated, user, loading: authLoading } = useApp()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -16,16 +16,6 @@ const LoginPage = memo(() => {
   
   const redirectTo = searchParams.get('redirect') || '/dashboard'
   
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      if (user.role === 'admin') {
-        navigate('/secure-admin-dashboard')
-      } else {
-        navigate(redirectTo)
-      }
-    }
-  }, [isAuthenticated, user, navigate, redirectTo])
-
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -38,9 +28,9 @@ const LoginPage = memo(() => {
       setTimeout(() => {
         // Check user role and redirect accordingly
         if (result.user && result.user.role === 'admin') {
-          navigate('/secure-admin-dashboard')
+          navigate('/secure-admin-dashboard', { replace: true })
         } else {
-          navigate(redirectTo)
+          navigate(redirectTo, { replace: true })
         }
       }, 500)
     } else {
@@ -49,7 +39,36 @@ const LoginPage = memo(() => {
     setLoading(false)
   }, [email, password, login, navigate, redirectTo])
 
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-400 mx-auto mb-4" />
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
+  // If already authenticated, show a message instead of redirecting
+  if (isAuthenticated && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <Check className="h-12 w-12 text-green-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">Already Logged In</h2>
+          <p className="text-slate-400 mb-4">You are already signed in as {user.name}</p>
+          <Link 
+            to={user.role === 'admin' ? '/secure-admin-dashboard' : '/dashboard'} 
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+          >
+            Go to Dashboard <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">

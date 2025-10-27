@@ -37,7 +37,7 @@ const Dashboard = memo(() => {
         <div className="container mx-auto px-4">
           <div className="mb-8">
             <h1 className="mb-2 text-3xl font-bold neon-text">Welcome back, {userData.name}!</h1>
-            <p className="text-slate-300">Continue your cybersecurity journey</p>
+            <p className="text-slate-300">Continue your learning journey</p>
           </div>
 
           <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">

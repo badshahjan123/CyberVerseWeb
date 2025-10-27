@@ -9,10 +9,7 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    checkAuthStatus()
-    setupActivityTracking()
-  }, [])
+
 
   // Check if session has expired based on last activity
   const isSessionExpired = () => {
@@ -29,7 +26,7 @@ export function AppProvider({ children }) {
   }, [])
 
   // Setup activity tracking listeners
-  const setupActivityTracking = () => {
+  const setupActivityTracking = useCallback(() => {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click']
     
     const handleActivity = () => {
@@ -48,14 +45,18 @@ export function AppProvider({ children }) {
         window.removeEventListener(event, handleActivity)
       })
     }
-  }
+  }, [updateLastActivity])
 
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     const token = localStorage.getItem('token')
     if (token) {
       // Check if session expired
       if (isSessionExpired()) {
-        logout()
+        setUser(null)
+        localStorage.removeItem('token')
+        localStorage.removeItem('lastActivity')
+        navigate('/')
+        setLoading(false)
         return
       }
       try {
@@ -70,7 +71,15 @@ export function AppProvider({ children }) {
       }
     }
     setLoading(false)
-  }
+  }, [navigate, updateLastActivity])
+
+  useEffect(() => {
+    // Temporarily disable to fix infinite loop
+    // checkAuthStatus()
+    setLoading(false)
+    const cleanup = setupActivityTracking()
+    return cleanup
+  }, [])
 
   const login = useCallback(async (email, password) => {
     try {

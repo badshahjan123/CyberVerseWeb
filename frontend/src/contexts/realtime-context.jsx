@@ -30,12 +30,13 @@ export const RealtimeProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    refreshUserStats()
+    // Temporarily disable to fix infinite loop
+    // refreshUserStats()
     
     // Refresh every 30 seconds for real-time updates
-    const interval = setInterval(refreshUserStats, 30000)
+    // const interval = setInterval(refreshUserStats, 30000)
     
-    return () => clearInterval(interval)
+    // return () => clearInterval(interval)
   }, [])
 
   return (
