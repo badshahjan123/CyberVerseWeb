@@ -4,188 +4,213 @@ import { apiCall, SESSION_TIMEOUT } from "../config/api"
 
 const AppContext = createContext(undefined)
 
+export const useApp = () => {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error("useApp must be used within an AppProvider")
+  }
+  return context
+}
+
 export function AppProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const navigate = useNavigate()
 
+  // Check authentication status on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      apiCall('/auth/me')
+        .then(response => {
+          if (response?.user) {
+            setUser(response.user)
+            setIsAuthenticated(true)
+          } else {
+            localStorage.removeItem('token')
+            setIsAuthenticated(false)
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem('token')
+          setIsAuthenticated(false)
+        })
+        .finally(() => {
+          setLoading(false)
+        })
+    } else {
+      setLoading(false)
+    }
+  }, [])
 
-
-  // Check if session has expired based on last activity
-  const isSessionExpired = () => {
-    const lastActivity = localStorage.getItem('lastActivity')
-    if (!lastActivity) return false
-    
-    const timeSinceLastActivity = Date.now() - parseInt(lastActivity)
-    return timeSinceLastActivity > SESSION_TIMEOUT
-  }
-
-  // Update last activity timestamp
   const updateLastActivity = useCallback(() => {
     localStorage.setItem('lastActivity', Date.now().toString())
   }, [])
 
-  // Setup activity tracking listeners
-  const setupActivityTracking = useCallback(() => {
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click']
-    
-    const handleActivity = () => {
-      if (localStorage.getItem('token')) {
-        updateLastActivity()
+  const verify2FA = useCallback(async (userId, code) => {
+    try {
+      console.log('🔐 Starting 2FA verification...', { userId, code })
+      setLoading(true)
+
+      if (!userId || !code || code.length !== 6) {
+        console.error('Invalid verification data')
+        return { success: false, message: 'Invalid verification code' }
       }
-    }
 
-    events.forEach(event => {
-      window.addEventListener(event, handleActivity, { passive: true })
-    })
-
-    // Cleanup function
-    return () => {
-      events.forEach(event => {
-        window.removeEventListener(event, handleActivity)
+      const response = await apiCall('/auth/verify-2fa', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId,
+          code: code.trim()
+        })
       })
-    }
-  }, [updateLastActivity])
 
-  const checkAuthStatus = useCallback(async () => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      // Check if session expired
-      if (isSessionExpired()) {
-        setUser(null)
-        localStorage.removeItem('token')
-        localStorage.removeItem('lastActivity')
-        navigate('/')
-        setLoading(false)
-        return
+      console.log('Server response:', response)
+
+      if (!response) {
+        throw new Error('No response from server')
       }
-      try {
-        const response = await apiCall('/auth/me')
-        setUser(response.user)
+
+      // Handle string response (likely error)
+      if (typeof response === 'string') {
+        return { 
+          success: false, 
+          message: response
+        }
+      }
+
+      // Handle user ID response (backend error)
+      if (response === userId || response.data === userId) {
+        console.error('Backend returned only userId:', userId)
+        return { 
+          success: false, 
+          message: 'Invalid server response'
+        }
+      }
+
+      // Check for successful verification
+      if (response.token || (response.data && response.data.token)) {
+        const token = response.token || response.data.token
+        localStorage.setItem('token', token)
         updateLastActivity()
-      } catch (error) {
-        // Clear invalid token silently
-        localStorage.removeItem('token')
-        localStorage.removeItem('lastActivity')
-        setUser(null)
-      }
-    }
-    setLoading(false)
-  }, [navigate, updateLastActivity])
+        
+        try {
+          const userData = await apiCall('/auth/me')
+          if (userData?.user || (userData?.data && userData.data.user)) {
+            const user = userData?.user || userData.data.user
+            console.log('Setting authenticated user:', user)
+            setUser(user)
+            setIsAuthenticated(true)
+            setLoading(false)
 
-  useEffect(() => {
-    // Temporarily disable to fix infinite loop
-    // checkAuthStatus()
-    setLoading(false)
-    const cleanup = setupActivityTracking()
-    return cleanup
-  }, [])
+            // Navigate to dashboard
+            navigate('/dashboard', { replace: true })
+            
+            return { 
+              success: true,
+              message: 'Verification successful',
+              user,
+              token,
+              isAuthenticated: true
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch user data after 2FA:', error)
+          throw new Error('Failed to load user data after verification')
+        }
+      }
+
+      // Handle error messages
+      if (response.message || response.error) {
+        return {
+          success: false,
+          message: response.message || response.error
+        }
+      }
+
+      return {
+        success: false,
+        message: 'Invalid verification code'
+      }
+
+    } catch (error) {
+      console.error('2FA verification error:', error)
+      return { 
+        success: false,
+        message: error.message || 'Verification failed'
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [updateLastActivity, navigate])
 
   const login = useCallback(async (email, password) => {
     try {
+      setLoading(true)
       const response = await apiCall('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password })
       })
-      
-      localStorage.setItem('token', response.token)
-      updateLastActivity()
-      setUser(response.user)
-      
-      return { success: true, message: response.message, user: response.user }
-    } catch (error) {
-      return { success: false, message: error.message }
-    }
-  }, [updateLastActivity])
 
-  const register = useCallback(async (name, email, password) => {
-    try {
-      const response = await apiCall('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ name, email, password })
-      })
-      
-      return { success: true, message: response.message }
+      console.log('Login response:', response)
+
+      // If user has 2FA enabled and verification is required
+      if (response.user?.twoFactorEnabled) {
+        console.log('User has 2FA enabled, redirecting to verification')
+        return {
+          success: true,
+          requiresTwoFactor: true,
+          userId: response.userId || response.user.id,
+          email: response.email
+        }
+      }
+
+      // No 2FA enabled, proceed with normal login
+      if (response.token) {
+        console.log('Login successful, no 2FA required')
+        localStorage.setItem('token', response.token)
+        updateLastActivity()
+        setUser(response.user)
+        setIsAuthenticated(true)
+        navigate('/dashboard', { replace: true })
+      }
+
+      return {
+        success: true,
+        requiresTwoFactor: false,
+        user: response.user
+      }
     } catch (error) {
-      return { success: false, message: error.message }
+      return {
+        success: false,
+        message: error.message || 'Login failed'
+      }
+    } finally {
+      setLoading(false)
     }
-  }, [])
+  }, [updateLastActivity, navigate])
 
   const logout = useCallback(() => {
     setUser(null)
+    setIsAuthenticated(false)
     localStorage.removeItem('token')
     localStorage.removeItem('lastActivity')
-    navigate('/')
+    navigate('/', { replace: true })
   }, [navigate])
-
-  const isAuthenticated = useMemo(() => !!user, [user])
-  
-  const updateProfile = useCallback(async (profileData) => {
-    try {
-      const response = await apiCall('/users/profile', {
-        method: 'PUT',
-        body: JSON.stringify(profileData)
-      })
-      
-      setUser(response.user)
-      return { success: true, message: response.message }
-    } catch (error) {
-      return { success: false, message: error.message }
-    }
-  }, [])
-
-  const completelab = useCallback(async (labId, score) => {
-    try {
-      const response = await apiCall('/users/complete-lab', {
-        method: 'POST',
-        body: JSON.stringify({ labId, score })
-      })
-      
-      setUser(prev => ({
-        ...prev,
-        ...response.user
-      }))
-      return { success: true, message: response.message }
-    } catch (error) {
-      return { success: false, message: error.message }
-    }
-  }, [])
-
-  const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      try {
-        const response = await apiCall('/auth/me')
-        setUser(response.user)
-      } catch (error) {
-        console.error('Failed to refresh user:', error)
-      }
-    }
-  }, [])
 
   const contextValue = useMemo(() => ({
     user,
+    loading,
     isAuthenticated,
     login,
-    register,
     logout,
-    updateProfile,
-    completelab,
-    refreshUser,
-    loading
-  }), [user, isAuthenticated, login, register, logout, updateProfile, completelab, refreshUser, loading])
+    verify2FA
+  }), [user, loading, isAuthenticated, login, logout, verify2FA])
 
   return (
     <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   )
-}
-
-export function useApp() {
-  const context = useContext(AppContext)
-  if (context === undefined) {
-    throw new Error("useApp must be used within an AppProvider")
-  }
-  return context
 }

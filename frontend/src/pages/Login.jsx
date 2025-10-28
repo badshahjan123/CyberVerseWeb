@@ -1,18 +1,21 @@
-import { useState, useEffect, memo, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
 import { ModernButton } from "../components/ui/modern-button"
 import { Shield, Loader2, Check, ArrowRight } from "lucide-react"
+import TwoFactorAuth from "../components/TwoFactorAuth"
 
-const LoginPage = memo(() => {
+const LoginPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { login, isAuthenticated, user, loading: authLoading } = useApp()
+  const { login, verify2FA, isAuthenticated, user, loading: authLoading } = useApp()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
+  const [showTwoFactor, setShowTwoFactor] = useState(false)
+  const [twoFactorData, setTwoFactorData] = useState(null)
   
   const redirectTo = searchParams.get('redirect') || '/dashboard'
   
@@ -21,25 +24,65 @@ const LoginPage = memo(() => {
     setLoading(true)
     setError("")
 
-    const result = await login(email, password)
+    const deviceInfo = {
+      userAgent: navigator.userAgent,
+      ipAddress: 'client-ip', // This would be set by backend
+      deviceName: navigator.platform,
+      location: 'Unknown'
+    }
+
+    const result = await login(email, password, deviceInfo)
     
     if (result.success) {
-      setSuccess(true)
-      setTimeout(() => {
-        // Check user role and redirect accordingly
-        if (result.user && result.user.role === 'admin') {
-          navigate('/secure-admin-dashboard', { replace: true })
-        } else {
-          navigate(redirectTo, { replace: true })
-        }
-      }, 500)
+      if (result.requiresTwoFactor) {
+        // Show 2FA screen
+        setTwoFactorData({
+          email: result.email,
+          userId: result.userId
+        })
+        setShowTwoFactor(true)
+      } else {
+        // Complete login
+        setSuccess(true)
+        // Always navigate to dashboard
+        navigate('/dashboard', { replace: true })
+      }
     } else {
       setError(result.message || "Invalid credentials. Please try again.")
     }
     setLoading(false)
   }, [email, password, login, navigate, redirectTo])
 
-  // Show loading while checking authentication
+  const handle2FAVerify = useCallback(async (userId, code) => {
+    try {
+      console.log('Starting 2FA verification in Login page...')
+      const response = await verify2FA(userId, code)
+      console.log('2FA Verification response:', response)
+      
+      if (response.success) {
+        console.log('Verification successful, preparing navigation...')
+        setSuccess(true)
+        setShowTwoFactor(false)
+        
+        // Force immediate navigation to dashboard
+        console.log('Navigating to dashboard...')
+        window.location.href = '/dashboard'
+      }
+      return response
+    } catch (error) {
+      console.error('2FA verification error:', error)
+      return {
+        success: false,
+        message: error.message || 'Verification failed'
+      }
+    }
+  }, [verify2FA, twoFactorData, navigate, redirectTo])
+
+  const handle2FACancel = useCallback(() => {
+    setShowTwoFactor(false)
+    setTwoFactorData(null)
+  }, [])
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
@@ -51,7 +94,17 @@ const LoginPage = memo(() => {
     )
   }
 
-  // If already authenticated, show a message instead of redirecting
+  if (showTwoFactor && twoFactorData) {
+    return (
+      <TwoFactorAuth
+        email={twoFactorData.email}
+        userId={twoFactorData.userId}
+        onVerify={handle2FAVerify}
+        onCancel={handle2FACancel}
+      />
+    )
+  }
+
   if (isAuthenticated && user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
@@ -79,11 +132,9 @@ const LoginPage = memo(() => {
               <Shield className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-xl font-bold text-white mb-1">Welcome Back</h1>
-            {/* Updated with admin routing fix */}
             <p className="text-gray-300 text-sm">Sign in to continue your journey</p>
           </div>
 
-          {/* Google Sign In Button */}
           <div className="mb-4">
             <button
               type="button"
@@ -171,7 +222,6 @@ const LoginPage = memo(() => {
       </div>
     </div>
   )
-})
+}
 
-LoginPage.displayName = 'LoginPage'
 export default LoginPage

@@ -100,6 +100,52 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['local', 'google'],
     default: 'local'
+  },
+  
+  // 2FA Configuration
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorMethod: {
+    type: String,
+    enum: ['email', 'totp', 'both'],
+    default: 'email'
+  },
+  twoFactorSecret: {
+    type: String,
+    select: false // Don't include in queries by default
+  },
+  twoFactorBackupCodes: [{
+    code: String,
+    used: { type: Boolean, default: false },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  
+  // Email OTP
+  emailOTP: {
+    code: String,
+    expiresAt: Date,
+    attempts: { type: Number, default: 0 },
+    maxAttempts: { type: Number, default: 3 }
+  },
+  
+  // Device Management
+  trustedDevices: [{
+    deviceId: String,
+    deviceName: String,
+    userAgent: String,
+    ipAddress: String,
+    location: String,
+    lastUsed: { type: Date, default: Date.now },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  
+  // Security Settings
+  securitySettings: {
+    requireTwoFactorOnLogin: { type: Boolean, default: false },
+    requireTwoFactorOnNewDevice: { type: Boolean, default: true },
+    sessionTimeout: { type: Number, default: 24 * 60 * 60 * 1000 } // 24 hours
   }
 }, {
   timestamps: true

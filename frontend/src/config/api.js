@@ -18,16 +18,33 @@ export const apiCall = async (endpoint, options = {}) => {
   };
 
   try {
+    console.log(`🌐 API Request: ${endpoint}`, {
+      method: config.method || 'GET',
+      headers: config.headers,
+      body: config.body ? JSON.parse(config.body) : undefined
+    });
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     const data = await response.json();
     
+    console.log(`📥 API Response: ${endpoint}`, {
+      status: response.status,
+      ok: response.ok,
+      data
+    });
+    
     if (!response.ok) {
-      throw new Error(data.message || 'Something went wrong');
+      throw new Error(data.message || `Server returned ${response.status}: ${data.error || 'Unknown error'}`);
+    }
+    
+    // If data is just a string, wrap it in an object
+    if (typeof data === 'string') {
+      return { data };
     }
     
     return data;
   } catch (error) {
-    console.error('API Error:', error);
+    console.error(`❌ API Error (${endpoint}):`, error);
     throw error;
   }
 };

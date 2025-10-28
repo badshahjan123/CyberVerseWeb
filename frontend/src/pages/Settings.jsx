@@ -1,8 +1,9 @@
-import { useState, memo, useMemo, useCallback } from "react"
+import { useState, memo, useMemo, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
 import { updateProfile } from "../services/profile"
-import { User, Bell, Shield, Palette, Globe, Key, Trash2, Save } from "lucide-react"
+import { User, Bell, Shield, Palette, Globe, Key, Trash2, Save, Upload } from "lucide-react"
+import TwoFactorSettings from '../components/TwoFactorSettings'
 
 // Memoized tab button component
 const TabButton = memo(({ tab, isActive, onClick }) => {
@@ -58,10 +59,12 @@ const InputField = memo(({ label, type = "text", value, onChange, placeholder })
 ))
 
 const Settings = memo(() => {
-  const { user, updateProfile: updateUserProfile } = useApp()
+  const { user, updateProfile: updateUserProfile, refreshUser } = useApp()
   const navigate = useNavigate()
+  const fileInputRef = useRef(null)
   const [activeTab, setActiveTab] = useState("profile")
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [settings, setSettings] = useState({
     username: user?.name || "",
     email: user?.email || "",
@@ -131,6 +134,62 @@ const Settings = memo(() => {
     setSettings(prev => ({ ...prev, email: e.target.value }))
   }, [])
 
+  const handleAvatarUpload = useCallback(async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size must be less than 2MB')
+      return
+    }
+
+    // Validate file type
+    if (!file.type.match(/^image\/(jpeg|jpg|png|gif)$/)) {
+      alert('Only JPEG, PNG, and GIF files are allowed')
+      return
+    }
+
+    setIsUploadingAvatar(true)
+    try {
+      const formData = new FormData()
+      formData.append('avatar', file)
+
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://localhost:5000/api/users/upload-avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      })
+
+      const data = await response.json()
+      console.log('Upload response:', data)
+      
+      if (response.ok && data.avatar) {
+        // Update global user state immediately
+        await updateUserProfile({ avatar: data.avatar })
+        await refreshUser()
+        alert('Avatar updated successfully!')
+      } else {
+        alert(data.message || 'Failed to upload avatar')
+      }
+    } catch (error) {
+      console.error('Avatar upload error:', error)
+      alert('Failed to upload avatar')
+    } finally {
+      setIsUploadingAvatar(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }, [refreshUser])
+
+  const handleAvatarClick = useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
+
   // Memoized notification settings
   const notificationSettings = useMemo(() => [
     {
@@ -189,12 +248,36 @@ const Settings = memo(() => {
                 </div>
                 <div className="p-6 space-y-6">
                   <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center">
-                      <User className="w-10 h-10 text-white" />
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center">
+                      {user?.avatar ? (
+                        <img 
+                          src={`http://localhost:5000${user.avatar}?t=${Date.now()}`} 
+                          alt="Avatar" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.log('Avatar load error:', e.target.src)
+                            e.target.style.display = 'none'
+                          }}
+                        />
+                      ) : (
+                        <User className="w-10 h-10 text-white" />
+                      )}
                     </div>
                     <div>
-                      <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg">
-                        Change Avatar
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                      <button 
+                        onClick={handleAvatarClick}
+                        disabled={isUploadingAvatar}
+                        className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 text-white rounded-lg flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {isUploadingAvatar ? 'Uploading...' : 'Change Avatar'}
                       </button>
                       <p className="text-sm text-slate-400 mt-2">JPG, PNG or GIF. Max 2MB.</p>
                     </div>
@@ -266,17 +349,7 @@ const Settings = memo(() => {
                   </div>
 
                   <div className="border-t border-slate-700 pt-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">Two-Factor Authentication</h3>
-                    <div className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg">
-                      <div>
-                        <div className="font-medium text-white">2FA Status</div>
-                        <div className="text-sm text-slate-400">Add an extra layer of security</div>
-                      </div>
-                      <span className="px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded text-sm">Disabled</span>
-                    </div>
-                    <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg mt-4">
-                      Enable 2FA
-                    </button>
+                    <TwoFactorSettings user={user} onUpdate={refreshUser} />
                   </div>
                 </div>
               </div>

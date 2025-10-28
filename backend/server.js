@@ -19,7 +19,9 @@ const Lab = require('./models/Lab');
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors({
   origin: true,
   credentials: true
@@ -41,6 +43,9 @@ app.use(limiter);
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files for avatars
+app.use('/uploads', express.static('uploads'));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -160,6 +165,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/progress', require('./routes/progress'));
+app.use('/api/2fa', require('./routes/twoFactor')); // 2FA enabled
 
 // Health check
 app.get('/api/health', (req, res) => {

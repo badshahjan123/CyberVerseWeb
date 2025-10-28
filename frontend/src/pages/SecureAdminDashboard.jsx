@@ -31,20 +31,43 @@ const SecureAdminDashboard = () => {
 
   const verifyAuth = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/auth/verify', {
-        credentials: 'include'
-      })
-
-      if (!response.ok) {
+      // Get token from localStorage
+      const token = localStorage.getItem('token')
+      if (!token) {
         navigate('/login')
         return
       }
 
+      const response = await fetch('http://localhost:5000/api/admin/auth/verify', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Clear token and redirect to login
+          localStorage.removeItem('token')
+          navigate('/login?redirect=/secure-admin-dashboard')
+          return
+        }
+        throw new Error('Authentication failed')
+      }
+
       const data = await response.json()
+      if (!data.user || data.user.role !== 'admin') {
+        navigate('/dashboard')
+        return
+      }
+
       setUser(data.user)
       setLoading(false)
     } catch (error) {
-      navigate('/login')
+      console.error('Admin verification error:', error)
+      navigate('/login?redirect=/secure-admin-dashboard')
     }
   }
 

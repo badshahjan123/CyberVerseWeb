@@ -21,9 +21,9 @@ const Dashboard = memo(() => {
   }, [currentUser])
 
   const stats = useMemo(() => [
-    { label: "Level", value: userData.level, icon: Zap, color: "text-blue-400" },
-    { label: "Points", value: userData.points.toLocaleString(), icon: Trophy, color: "text-yellow-400" },
-    { label: "Global Rank", value: `#${userData.rank}`, icon: Target, color: "text-red-400" },
+    { label: "Level", value: userData.level || 1, icon: Zap, color: "text-blue-400" },
+    { label: "Points", value: (userData.points || 0).toLocaleString(), icon: Trophy, color: "text-yellow-400" },
+    { label: "Global Rank", value: `#${userData.rank || 999}`, icon: Target, color: "text-red-400" },
     { label: "Rooms/Labs", value: `${userData.completedRooms || 0}/${userData.completedLabs || 0}`, icon: CheckCircle2, color: "text-green-400" },
   ], [userData])
 
