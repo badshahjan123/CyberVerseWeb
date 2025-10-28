@@ -185,6 +185,21 @@ app.use((err, req, res, next) => {
   });
 });
 
+app.get('/api/user-stats', async (req, res) => {
+  try {
+    // Abhi dummy data return karte hain, baad me DB logic daalenge
+    res.json({
+      user: { name: 'Badshah', email: 'badshahkha656@gmail.com' },
+      recentActivity: [],
+      weeklyStats: { labsCompleted: 0, pointsEarned: 0, timeSpent: '0h', rankChange: 0 }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch user stats' });
+  }
+});
+
+
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
