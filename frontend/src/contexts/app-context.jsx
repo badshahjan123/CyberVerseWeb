@@ -18,6 +18,13 @@ export function AppProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const navigate = useNavigate()
 
+  const updateUserProfile = useCallback((data) => {
+    setUser(prev => ({
+      ...prev,
+      ...data
+    }))
+  }, [])
+
   // Check authentication status on mount
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -205,8 +212,9 @@ export function AppProvider({ children }) {
     isAuthenticated,
     login,
     logout,
-    verify2FA
-  }), [user, loading, isAuthenticated, login, logout, verify2FA])
+    verify2FA,
+    updateUserProfile
+  }), [user, loading, isAuthenticated, login, logout, verify2FA, updateUserProfile])
 
   return (
     <AppContext.Provider value={contextValue}>

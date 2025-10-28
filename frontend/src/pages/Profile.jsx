@@ -1,6 +1,7 @@
-import { useState, memo, useMemo } from "react"
+import { useState, memo, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
+import { useRealtime } from "../contexts/realtime-context"
 import { updateProfile } from "../services/profile"
 import { User, Trophy, Target, Clock, Edit, Settings, Crown, Medal, Star } from "lucide-react"
 
@@ -22,8 +23,20 @@ const Profile = memo(() => {
   }), [user])
 
   const [achievements, setAchievements] = useState([])
+  const { userStats: realtimeStats, recentActivity, weeklyStats } = useRealtime()
 
-  const [recentActivity, setRecentActivity] = useState([])
+  // Update user stats when realtime data changes
+  useEffect(() => {
+    if (realtimeStats && updateUserProfile) {
+      updateUserProfile({
+        ...user,
+        points: realtimeStats.totalPoints || user?.points,
+        rank: realtimeStats.rank || user?.rank,
+        completedLabs: realtimeStats.completedLabs || user?.completedLabs,
+        joinedRooms: realtimeStats.joinedRooms || user?.joinedRooms
+      })
+    }
+  }, [realtimeStats, updateUserProfile, user])
 
   const getRarityColor = (rarity) => {
     const colors = {
@@ -270,19 +283,21 @@ const Profile = memo(() => {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-slate-400">Labs Completed</span>
-                    <span className="text-slate-100 font-semibold">8</span>
+                    <span className="text-slate-100 font-semibold">{weeklyStats.labsCompleted}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Points Earned</span>
-                    <span className="text-slate-100 font-semibold">420</span>
+                    <span className="text-slate-100 font-semibold">{weeklyStats.pointsEarned}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Time Spent</span>
-                    <span className="text-slate-100 font-semibold">12h</span>
+                    <span className="text-slate-100 font-semibold">{weeklyStats.timeSpent}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Rank Change</span>
-                    <span className="text-green-400 font-semibold">↗ +12</span>
+                    <span className={`font-semibold ${weeklyStats.rankChange > 0 ? 'text-green-400' : weeklyStats.rankChange < 0 ? 'text-red-400' : 'text-slate-400'}`}>
+                      {weeklyStats.rankChange > 0 ? '↗' : weeklyStats.rankChange < 0 ? '↘' : '•'} {weeklyStats.rankChange > 0 ? '+' : ''}{weeklyStats.rankChange}
+                    </span>
                   </div>
                 </div>
               </div>
