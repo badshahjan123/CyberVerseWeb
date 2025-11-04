@@ -55,7 +55,8 @@ const Leaderboard = memo(() => {
   }
 
   return (
-    <div className="page-container bg-slate-950 py-8">
+    <div className="page-container bg-[rgb(17,24,39)] text-text">
+
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">Global Leaderboard</h1>

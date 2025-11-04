@@ -36,7 +36,11 @@ export const getRoomBySlug = async (slug) => {
     if (response.data.success && response.data.data) {
       return response.data.data;
     } else {
-      throw new Error(response.data.message || 'Invalid response format');
+      if (response.status === 404) {
+        throw new Error('Room not found');
+      } else {
+        throw new Error(response.data.message || 'Invalid response format');
+      }
     }
   } catch (error) {
     console.error('❌ Error fetching room:', error);
@@ -95,3 +99,27 @@ export const completeRoom = async (slug, timeSpent, finalScore) => {
     throw error
   }
 }
+
+// --- PROGRESS PERSISTENCE ---
+
+/**
+ * Simulates fetching a user's progress for a specific room.
+ * In a real app, this would make an API call to your backend.
+ * @param {string} roomSlug - The slug of the room.
+ * @returns {Promise<object>} - A promise that resolves with the user's progress.
+ */
+export const getUserRoomProgress = async (roomSlug, userId) => {
+  console.log(`Simulating fetch for user progress in room: ${roomSlug}`);
+  // In a real app: return api.get(`/rooms/${roomSlug}/progress?userId=${userId}`);
+  return { completedTaskIds: [] }; // Start with no progress for now
+};
+
+/**
+ * Simulates saving a user's progress for a specific room.
+ * @param {string} roomSlug - The slug of the room.
+ * @param {Array<number>} completedTaskIds - An array of completed task IDs.
+ */
+export const saveUserRoomProgress = async (roomSlug, completedTaskIds, activeTaskIndex) => {
+  console.log(`Simulating save for user progress in room: ${roomSlug}`, { completedTaskIds, activeTaskIndex });
+  // In a real app: return api.post(`/rooms/${roomSlug}/progress`, { completedTaskIds, activeTaskIndex });
+};

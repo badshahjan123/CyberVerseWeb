@@ -165,6 +165,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/progress', require('./routes/progress'));
+app.use('/api/room-progress', require('./routes/roomProgress'));
 app.use('/api/2fa', require('./routes/twoFactor')); // 2FA enabled
 
 // Health check

@@ -34,6 +34,8 @@ export function AppProvider({ children }) {
           if (response?.user) {
             setUser(response.user)
             setIsAuthenticated(true)
+            // Assume streak data is part of the user object from /auth/me
+            // setUser(prev => ({ ...prev, currentStreak: response.user.currentStreak || 0, longestStreak: response.user.longestStreak || 0 }));
           } else {
             localStorage.removeItem('token')
             setIsAuthenticated(false)

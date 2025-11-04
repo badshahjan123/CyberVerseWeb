@@ -50,7 +50,8 @@ const Profile = memo(() => {
   }
 
   return (
-    <div className="page-container bg-slate-950 py-8">
+    <div className="page-container bg-[rgb(17,24,39)] text-text">
+
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="card mb-8 p-6 rounded-xl bg-slate-800/30 border border-slate-700/50">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">

@@ -110,7 +110,7 @@ function AppContent() {
                   <Route path="/payment-success" element={<PaymentSuccess />} />
                   <Route path="/certificates" element={<Certificates />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
+                 <Route path="/signup" element={<Register />} />
 
                   <Route path="/rooms" element={<Rooms />} />
                   <Route path="/rooms/:slug" element={<RoomDetail />} />

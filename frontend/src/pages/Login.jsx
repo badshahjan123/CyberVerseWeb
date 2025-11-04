@@ -124,7 +124,7 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl">
           <div className="text-center mb-6">
@@ -213,10 +213,14 @@ const LoginPage = () => {
           </form>
           
           <div className="mt-4 text-center text-sm">
-            <span className="text-gray-400">Don't have an account? </span>
-            <Link to="/register" className="font-medium text-blue-400 hover:text-blue-300">
-              Sign up
-            </Link>
+      <span className="text-gray-400">Don't have an account? </span>
+      <button
+        type="button"
+        onClick={() => navigate("/signup")}
+        className="font-medium text-blue-400 hover:text-blue-300"
+      >
+        Sign up
+      </button>
           </div>
         </div>
       </div>

@@ -152,7 +152,8 @@ const PremiumPage = memo(() => {
   ], [])
 
   return (
-    <div className="bg-slate-950 min-h-screen py-12">
+    <div className="page-container bg-[rgb(17,24,39)] text-text">
+
       <div className="container mx-auto px-6 max-w-6xl">
         <div className="text-center mb-12">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-500/10 border border-primary-500/20 px-4 py-2 text-sm">
@@ -192,8 +193,7 @@ const PremiumPage = memo(() => {
             Join thousands of cybersecurity professionals who have advanced their careers with premium training
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <ModernButton variant="primary" size="lg">
-              <Link to="/register">
+            <ModernButton variant="primary" size="lg">              <Link to="/register">
                 <span>Start Free Trial</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

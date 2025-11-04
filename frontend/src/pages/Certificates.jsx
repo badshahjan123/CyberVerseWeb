@@ -1,4 +1,4 @@
-import { memo, useState } from "react"
+import { memo, useState, useEffect } from "react"
 import { ModernButton } from "../components/ui/modern-button"
 import { Badge } from "../components/ui/badge"
 import { 
@@ -128,7 +128,23 @@ CertificateCard.displayName = 'CertificateCard'
 const CertificatesPage = memo(() => {
   const [filter, setFilter] = useState('all') // all, earned, locked
 
-  const [certificates, setCertificates] = useState([])
+  const [certificates, setCertificates] = useState([]) // This will be populated by API call
+
+  // Placeholder for fetching certificates from an API
+  useEffect(() => {
+    const fetchCertificates = async () => {
+      try {
+        // Replace with actual API call: const fetchedCertificates = await getCertificates();
+        // For now, an empty array to remove dummy data
+        const mockCertificates = []; 
+        setCertificates(mockCertificates);
+      } catch (error) {
+        console.error("Failed to fetch certificates:", error);
+        // Handle error state
+      }
+    };
+    fetchCertificates();
+  }, []);
 
   const filteredCertificates = certificates.filter(cert => {
     if (filter === 'earned') return cert.earned
@@ -143,7 +159,8 @@ const CertificatesPage = memo(() => {
   }
 
   return (
-    <div className="bg-slate-950 min-h-screen py-12">
+    
+    <div className="page-container bg-[rgb(17,24,39)] text-text">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">

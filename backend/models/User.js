@@ -83,9 +83,17 @@ const userSchema = new mongoose.Schema({
   }],
   roomProgress: [{
     roomId: String,
-    completed: Boolean,
-    completedAt: Date,
-    score: Number
+    joined: { type: Boolean, default: false },
+    currentLecture: { type: Number, default: 0 },
+    completedLectures: [Number],
+    exerciseAnswers: {
+      type: Object,
+      default: {}
+    },
+    quizCompleted: { type: Boolean, default: false },
+    finalScore: Number,
+    completed: { type: Boolean, default: false },
+    completedAt: Date
   }],
   avatar: {
     type: String,
@@ -171,6 +179,20 @@ userSchema.methods.calculateRank = async function() {
   const rank = await User.countDocuments({ points: { $gt: this.points } }) + 1;
   return rank;
 };
+
+// Update completed counts before saving
+userSchema.pre('save', function(next) {
+  // Only update if the progress arrays were modified
+  if (this.isModified('roomProgress') && this.roomProgress) {
+    const uniqueCompletedRooms = this.roomProgress.filter(rp => rp.completed && rp.roomId).length;
+    this.completedRooms = uniqueCompletedRooms;
+  }
+  if (this.isModified('labProgress') && this.labProgress) {
+    const uniqueCompletedLabs = this.labProgress.filter(lp => lp.completed && lp.labId).length;
+    this.completedLabs = uniqueCompletedLabs;
+  }
+  next();
+});
 
 
 

@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom"
-import { useState, memo, useMemo } from "react"
+import { useState, memo, useMemo, useEffect } from "react"
 import { ArrowLeft, Play, Pause, RotateCcw, Clock, Users, Trophy, Lock, CheckCircle, ArrowRight } from "lucide-react"
+import { getLabById } from "../services/labs" // Assuming this service exists or will be created
 
 const LabDetail = memo(() => {
   const { id } = useParams()
@@ -8,20 +9,10 @@ const LabDetail = memo(() => {
   const [currentStep, setCurrentStep] = useState(1)
   const [timeElapsed, setTimeElapsed] = useState(0)
 
-  const [lab, setLab] = useState({
-    id: parseInt(id),
-    title: "Loading...",
-    description: "Loading lab details...",
-    difficulty: "beginner",
-    duration: "0 min",
-    participants: "0",
-    points: 0,
-    category: "web",
-    totalSteps: 0,
-    isPremium: false
-  })
-
-  const [steps, setSteps] = useState([])
+  const [lab, setLab] = useState(null)
+  const [steps, setSteps] = useState([]) // Steps would come from lab data
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   const handleStart = () => {
     setIsRunning(!isRunning)
@@ -43,6 +34,63 @@ const LabDetail = memo(() => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
     }
+  }
+
+  // Placeholder for fetching lab details from an API
+  useEffect(() => {
+    const fetchLabDetails = async () => {
+      if (!id) {
+        setError("No lab ID provided.");
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        setError(null);
+        // Replace with actual API call: const fetchedLab = await getLabById(id);
+        // For now, a simple mock to avoid breaking the UI
+        const mockLab = {
+          id: parseInt(id),
+          title: "Lab Details Loading...",
+          description: "Details will appear here once fetched from the API.",
+          difficulty: "beginner",
+          duration: "0 min",
+          participants: "0",
+          points: 0,
+          category: "web",
+          totalSteps: 0, // This should come from fetched data
+          isPremium: false
+        };
+        setLab(mockLab);
+      } catch (err) {
+        setError(err.message || "Failed to load lab details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLabDetails();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="page-container bg-[rgb(17,24,39)] text-text py-8">
+        <div className="container mx-auto px-6 max-w-7xl text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted text-lg">Loading lab details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !lab) {
+    return (
+      <div className="page-container bg-[rgb(17,24,39)] text-text py-8">
+        <div className="container mx-auto px-6 max-w-7xl text-center">
+          <p className="text-danger text-lg mb-4">{error || "Lab not found."}</p>
+          <Link to="/labs" className="btn-primary px-4 py-2">Back to Labs</Link>
+        </div>
+      </div>
+    );
   }
 
   return (

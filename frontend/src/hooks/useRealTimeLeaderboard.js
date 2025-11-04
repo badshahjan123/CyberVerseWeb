@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getLeaderboard } from '../services/progress'
 
-export const useRealTimeLeaderboard = (refreshInterval = 30000) => {
+export const useRealTimeLeaderboard = (refreshInterval = 60000) => {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -20,12 +20,14 @@ export const useRealTimeLeaderboard = (refreshInterval = 30000) => {
   }
 
   useEffect(() => {
+    // Initial fetch on component mount
     fetchLeaderboard()
     
-    const interval = setInterval(fetchLeaderboard, refreshInterval)
+    // Disable automatic refresh to prevent flickering when backend is down
+    // const interval = setInterval(fetchLeaderboard, refreshInterval)
     
-    return () => clearInterval(interval)
-  }, [refreshInterval])
+    // return () => clearInterval(interval)
+  }, [])
 
   return { leaderboard, loading, error, refresh: fetchLeaderboard }
 }

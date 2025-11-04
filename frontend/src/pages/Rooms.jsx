@@ -2,16 +2,17 @@ import { useState, useMemo, memo, useCallback, useEffect } from "react"
 import { Users, Zap, Plus, Filter, Clock, Crown } from "lucide-react"
 import { Link } from "react-router-dom"
 import { getRooms } from "../services/rooms"
+import { ProtectedRoute } from "../components/protected-route"
 
 const RoomCard = memo(({ room }) => (
   <Link to={`/rooms/${room.slug}`} className="block">
-    <div className="card p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-blue-500/50 transition-colors">
-      <div className="flex items-start justify-between mb-3">
+    <div className="card p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-blue-500/50 transition-colors min-h-[180px] flex flex-col">
+      <div className="flex items-start justify-between mb-3 flex-1">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-white">{room.title}</h3>
           </div>
-          <p className="text-sm text-slate-400 mb-2">{room.short_description}</p>
+          <p className="text-sm text-slate-400 mb-2 line-clamp-2">{room.short_description}</p>
           <div className="flex items-center gap-4 text-xs text-slate-500">
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
@@ -28,7 +29,7 @@ const RoomCard = memo(({ room }) => (
           <span className="text-xs text-green-400">Available</span>
         </div>
       </div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-auto">
         <span className={`px-2 py-1 text-xs font-medium rounded-full ${
           room.difficulty === "Beginner" ? "bg-green-600 text-white" :
           room.difficulty === "Intermediate" ? "bg-yellow-600 text-white" : "bg-red-600 text-white"
@@ -38,8 +39,8 @@ const RoomCard = memo(({ room }) => (
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span>{room.category}</span>
         </div>
-        <button className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors">
-          Start
+        <button className="btn-primary text-xs px-3 py-1">
+          View Room
         </button>
       </div>
     </div>
@@ -95,7 +96,8 @@ const Rooms = memo(() => {
   }, [fetchRooms])
 
   return (
-    <div className="page-container bg-slate-950 py-8">
+    <ProtectedRoute>
+      <div className="page-container bg-[rgb(17,24,39)] text-text">
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white mb-2">Practice Rooms</h1>
@@ -199,6 +201,7 @@ const Rooms = memo(() => {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   )
 })
 
