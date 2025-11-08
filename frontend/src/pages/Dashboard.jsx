@@ -2,9 +2,8 @@ import { Link } from "react-router-dom"
 import { useApp } from "../contexts/app-context"
 import { useRealtime } from "../contexts/realtime-context"
 import { ProtectedRoute } from "../components/protected-route"
-import { Trophy, Target, Zap, Clock, CheckCircle2, ArrowRight, Flame, RefreshCw } from "lucide-react"
+import { Trophy, Target, Zap, Clock, CheckCircle2, ArrowRight, Flame } from "lucide-react"
 import { memo, useMemo, useState, useEffect } from "react"
-import { fixCompletionCounts } from "../services/roomProgress"
 
 const Dashboard = memo(() => {
   const { user } = useApp()
@@ -38,21 +37,6 @@ const Dashboard = memo(() => {
 
   const [recentLabs, setRecentLabs] = useState([])
   const [upcomingRooms, setUpcomingRooms] = useState([])
-  const [fixingCounts, setFixingCounts] = useState(false)
-
-  const handleFixCounts = async () => {
-    setFixingCounts(true)
-    try {
-      await fixCompletionCounts()
-      alert('Completion counts fixed successfully!')
-      refreshUserStats()
-    } catch (error) {
-      console.error('Failed to fix counts:', error)
-      alert('Failed to fix counts. Please try again.')
-    } finally {
-      setFixingCounts(false)
-    }
-  }
 
   return (
     <ProtectedRoute>
@@ -60,19 +44,9 @@ const Dashboard = memo(() => {
 
         <div className="container mx-auto px-4">
           <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="mb-2 text-3xl font-bold text-text">Welcome back, <span className="text-green-400">{userData.name}</span>!</h1>
-                <p className="text-muted">Continue your learning journey</p>
-              </div>
-              <button
-                onClick={handleFixCounts}
-                disabled={fixingCounts}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-lg flex items-center gap-2 text-sm"
-              >
-                <RefreshCw className={`h-4 w-4 ${fixingCounts ? 'animate-spin' : ''}`} />
-                {fixingCounts ? 'Fixing...' : 'Fix Counts'}
-              </button>
+            <div>
+              <h1 className="mb-2 text-3xl font-bold text-text">Welcome back, <span className="text-green-400">{userData.name}</span>!</h1>
+              <p className="text-muted">Continue your learning journey</p>
             </div>
           </div>
 
