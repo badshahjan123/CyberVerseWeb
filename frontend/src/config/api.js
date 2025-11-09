@@ -34,6 +34,11 @@ export const apiCall = async (endpoint, options = {}) => {
     });
     
     if (!response.ok) {
+      // For validation errors, include the detailed errors
+      if (data.errors && Array.isArray(data.errors)) {
+        const errorMessages = data.errors.map(err => err.msg || err.message).join(', ');
+        throw new Error(errorMessages);
+      }
       throw new Error(data.message || `Server returned ${response.status}: ${data.error || 'Unknown error'}`);
     }
     

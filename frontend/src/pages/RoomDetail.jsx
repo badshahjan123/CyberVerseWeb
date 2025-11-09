@@ -35,9 +35,9 @@ const RoomDetail = () => {
               title: "RESTful APIs & Backend Basics",
               description: "Learn the fundamentals of RESTful APIs and backend development for modern web applications.",
               difficulty: "Beginner",
-              estimatedTime: "2-3 hours",
+              estimatedTime: "20 mins",
               points: 400,
-              participants: 892,
+              participants: 6,
               isPremium: false,
               lectures: [
                 {

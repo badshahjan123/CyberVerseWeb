@@ -20,6 +20,26 @@ const RegisterPage = memo(() => {
     setLoading(true)
     setError("")
 
+    if (!username || username.trim().length < 2) {
+      setError("Username must be at least 2 characters long")
+      setLoading(false)
+      return
+    }
+
+    // Validate username
+    if (!username || username.trim().length < 2) {
+      setError("Username must be at least 2 characters long")
+      setLoading(false)
+      return
+    }
+
+    // Validate email
+    if (!email || !email.includes('@')) {
+      setError("Please enter a valid email address")
+      setLoading(false)
+      return
+    }
+
     const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,}$/
 
     if (!strongRegex.test(password)) {
@@ -141,7 +161,7 @@ const RegisterPage = memo(() => {
             {success && (
               <p className="text-sm text-green-400 bg-green-500/10 border border-green-500/20 rounded-lg p-2">
                 <Check className="inline h-4 w-4 mr-1" />
-                Account created! Check your email to verify.
+                Account created Successfully navigating to login page..
               </p>
             )}
             

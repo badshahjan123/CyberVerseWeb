@@ -14,14 +14,7 @@ const PlanCard = memo(({ plan, index, onGetStarted }) => (
     }`}
     style={{ transform: 'translateZ(0)', willChange: 'transform' }}
   >
-    {plan.popular && (
-      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-        <Badge className="bg-gradient-to-r from-primary-500 to-teal-500 text-white px-4 py-1">
-          <Star className="h-3 w-3 mr-1" />
-          Most Popular
-        </Badge>
-      </div>
-    )}
+  
     
     <div className="text-center mb-8">
       <h3 className="text-2xl font-bold text-slate-100 mb-2">{plan.name}</h3>
@@ -97,7 +90,7 @@ const PremiumPage = memo(() => {
     },
     {
       name: "Pro",
-      price: "$19",
+      price: "$7",
       period: "month",
       description: "For serious learners",
       features: [
@@ -113,15 +106,14 @@ const PremiumPage = memo(() => {
     },
     {
       name: "Enterprise",
-      price: "$99",
-      period: "month",
+      price: "$100",
+      period: "year",
       description: "For teams and organizations",
       features: [
         "Everything in Pro",
         "Team management",
         "Custom lab creation",
         "Advanced reporting",
-        "SSO integration",
         "Dedicated support",
         "Custom branding"
       ]
@@ -193,7 +185,8 @@ const PremiumPage = memo(() => {
             Join thousands of cybersecurity professionals who have advanced their careers with premium training
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <ModernButton variant="primary" size="lg">              <Link to="/register">
+            <ModernButton variant="primary" size="lg">
+              <Link to="/register">
                 <span>Start Free Trial</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

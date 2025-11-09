@@ -200,6 +200,36 @@ export function AppProvider({ children }) {
     }
   }, [updateLastActivity, navigate])
 
+  const register = useCallback(async (username, email, password) => {
+    try {
+      setLoading(true)
+      const response = await apiCall('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ name: username, email, password })
+      })
+
+      return {
+        success: true,
+        message: response.message || 'Registration successful'
+      }
+    } catch (error) {
+      // Handle validation errors specifically
+      let errorMessage = error.message || 'Registration failed'
+      
+      // If it's a validation error, try to extract the first validation message
+      if (error.message === 'Validation failed') {
+        errorMessage = 'Please check your input: name (2+ chars), valid email, strong password (6+ chars with uppercase, lowercase, number, special char)'
+      }
+      
+      return {
+        success: false,
+        message: errorMessage
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const logout = useCallback(() => {
     setUser(null)
     setIsAuthenticated(false)
@@ -213,10 +243,11 @@ export function AppProvider({ children }) {
     loading,
     isAuthenticated,
     login,
+    register,
     logout,
     verify2FA,
     updateUserProfile
-  }), [user, loading, isAuthenticated, login, logout, verify2FA, updateUserProfile])
+  }), [user, loading, isAuthenticated, login, register, logout, verify2FA, updateUserProfile])
 
   return (
     <AppContext.Provider value={contextValue}>
